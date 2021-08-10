@@ -1,0 +1,22 @@
+/*
+CREATE TABLE W_XXDBL_YRN_CATG
+(
+  ITEM_CODE          VARCHAR2(20 BYTE),
+  YRN_TYPE           VARCHAR2(50 BYTE),
+  INVENTORY_ITEM_ID  NUMBER
+)
+*/
+
+
+
+select
+*
+from
+W_XXDBL_YRN_CATG
+
+
+
+select
+*
+from
+XXDBL.XXDBL_YRN_CATG

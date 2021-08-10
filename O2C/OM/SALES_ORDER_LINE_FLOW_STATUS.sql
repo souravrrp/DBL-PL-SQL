@@ -1,0 +1,49 @@
+SELECT lookup_type,
+  lookup_code,
+  meaning,
+  description
+FROM apps.fnd_lookup_values
+WHERE 1=1
+AND lookup_type = 'TRIP_STATUS'
+AND LANGUAGE      = 'US'
+--AND LOOKUP_CODE='DO/SCOU/1013786'
+
+SELECT
+*
+FROM
+APPS.FND_LOOKUP_VALUES
+WHERE 1=1
+AND LOOKUP_TYPE='SHIPMENT_PRIORITY'
+AND LOOKUP_CODE='DO/SCOU/1024303'
+
+
+SELECT
+*
+FROM
+APPS.FND_LOOKUP_VALUES
+WHERE 1=1
+AND LOOKUP_TYPE='SHIP_STATUS'
+
+SELECT lookup_type,
+  lookup_code,
+  meaning,
+  description
+FROM APPS.fnd_lookup_values
+WHERE lookup_type = 'PICK_STATUS'
+AND LANGUAGE      = 'US';
+
+
+
+
+SELECT distinct
+LOOKUP_TYPE,
+LOOKUP_CODE,
+MEANING
+FROM
+APPS.fnd_lookup_VALUES_VL
+WHERE 1=1
+--and LOOKUP_TYPE like '%COST%CENETER%'
+--AND MEANING='SEGMENT2'
+AND LOOKUP_TYPE=('XXAKG_COMPANY_CODES'/*,'SHIPMENT_PRIORITY'*/)
+--group by LOOKUP_TYPE
+

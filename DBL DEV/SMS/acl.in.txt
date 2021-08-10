@@ -1,0 +1,3 @@
+PRIVILEGE     HOST                     PORT
+smtp          erptest                   25
+http          erptest.dbl-group.com   8030

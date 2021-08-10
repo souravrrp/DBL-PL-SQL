@@ -1,0 +1,17 @@
+FND_GLOBAL
+
+mo_global
+
+FND_CLIENT_INFO
+
+SELECT * 
+FROM HR_ORGANIZATION_INFORMATION
+SELECT *
+     FROM   APPS.XLE_ENTITY_PROFILES EntityProfileEO,
+               APPS.HZ_GEOGRAPHIES HzGeographies,
+               APPS.HZ_ORG_PROFILES_CPUI_V HzOrgProfiles,
+               APPS.XLE_LOOKUPS lkp
+    WHERE  EntityProfileEO.GEOGRAPHY_ID=HzGeographies.GEOGRAPHY_ID
+    AND    EntityProfileEO.PARTY_ID=HzOrgProfiles.PARTY_ID
+    AND    lkp.LOOKUP_TYPE='XLE_YES_NO' 
+    AND    lkp.LOOKUP_CODE=EntityProfileEO.TRANSACTING_ENTITY_FLAG

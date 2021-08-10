@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>Most Expensive SQL</title>
+</head>
+<body bgcolor="#EFECC7">
+<center>
+<H2>Most Expensive SQL</H2>
+<hr>
+<table border=1>
+<tr><td><h4>Cumulative</h4></td><td><h4>Per Execution</h4></td></tr>
+<tr>
+    <td><A HREF="expensive_sql.php?order=CPU_TIME" target="output"> SQL, by CPU</A></td>
+    <td><A HREF="expensive_sql.php?order=CPU_TIME/EXECUTIONS" target="output">SQL,CPU / Exec</A></td>
+</tr>
+<tr>
+   <td><A HREF="expensive_sql.php?order=elapsed_time" target="output"> SQL, by elapsed time</A></td>
+   <td><A HREF="expensive_sql.php?order=elapsed_time/executions" target="output">SQL, by elapsed time / Exec</A></td>
+</tr>
+<tr>
+   <td><A HREF="expensive_sql.php?order=disk_reads" target="output"> SQL, by disk reads</A></td>
+   <td><A HREF="expensive_sql.php?order=disk_reads/executions" target="output"> SQL, by disk reads / Exec</A></td>
+</tr>
+<tr>
+    <td><A HREF="expensive_sql.php?order=rows_processed" target="output"> SQL, by rows processed</A></td>
+    <td><A HREF="expensive_sql.php?order=rows_processed/executions" target="output"> SQL, by rows processed per exec</A></td>
+</tr> 
+</table>
+<table border=1>
+<tr>
+    <td><A HREF="expensive_sql.php?order=executions" target="output"> SQL, by executions</A></td>
+    <td></td>
+</tr>
+<tr align="CENTER">
+    <td><A HREF="sql_lookup.php" target="output"> SQL lookup, by SQL ID</A></td>
+</tr>
+</table>
+<hr>
+</center>
+</body>
+</html>

@@ -1,0 +1,399 @@
+21-Aug-2005:
+	- Fixed the bug that caused tablespaces with no free space not
+      to show in "Free Space" screen (Files & Tablespace page)
+	- Fixed the bug that prevented execution plans in 10g from showing
+      when SQL was accessed through "Expensive SQL" page.
+05-Sep-2005
+    Version 1.0.1
+    - Added masks to change passwords or lock accounts to the "Security"
+      menu
+    - Both system and session stats can now be filtered by patterns, ie.
+      only statistics with names conforming to the entered patterns will
+      be selected. Pattern search is case insensitive.
+24-Sep-2005
+    - Added two entries to Get DDL menu which sport script generation
+      for public synonyms and various object types.
+    - Added longops to the session info. 
+27-Nov-2005
+    Version 1.0.3
+    - Pattern filtering added for Get DDL menus.
+    - Show Connection is now a sub-menu which contains entries
+      to change NLS_DATE_FORMAT and to show PHP info.
+    - Instance menu contains several new entries: undo statistics,
+      fixed view and dictionary view descriptions.
+    - Files and tablespaces menu now has an entry which generates
+      "create database" statement for the given database. That was
+      inspired by Orac_DBA tool, now defunct, which was written in
+      Perl, by Andy Duncan and Jared Still.
+    - README.txt was fixed.
+31-Dec-2005
+    - Undo statistics doesn't show negative entries any more,
+      it only shows entries that actually make sense.
+    - SQL Worksheet no longer needs to have OutParameter binding in a
+      loop, OCI8 bug was fixed in PHP 5.1.1  and ADOdb 4.68. Also,
+      SQL entry window width was increased from 60 characters to 65.
+    - Multiple privileges/roles can now be granted at once. The "select"
+      box now can support multiple choices.
+    - The "Instance" menu entry split to "Instance" and "Misc" for
+      manageability.
+    - CBO CPU Stats entry added to the instance menu. It queries
+      SYS.AUX_STATS$
+    - Version change to 1.0.4 
+01-Jan-2006
+    - Added are two menu entries for expensive SQL.  Statements can now be 
+      sorted by executions and rows processed in addition to the CPU, elapsed 
+      time or read requests.
+    - Scripts that grant privileges can now both grant and revoke privileges.
+    - Pattern matching was added to "Misc Info" menu, so that tables fitting 
+      the criteria can now be searched for an individual owner or a group of
+      owners. Affected scripts are the scripts for detecting tables with
+      non-indexed foreign keys, fragmented objects and the largest objects.
+    - Two menu items added to "Misc Info" menu: Table without a PK and table
+      with no indexes. Pattern lookup for an individual owner is now an 
+      option.
+    - Version change to 1.0.5 
+06-Jan-2006
+      Removed dependency on PEAR Date class. 
+11-Feb-2006
+    - Killing session now requires confirmation.
+    - Sessions menu contains new entry, which sorts sessions
+      by the usage of undo blocks. This can be used to monitor
+      progress of the rollback operations.
+    - SGA statistics in the instance menu was renamed to "memory
+      statistics" as it also shows PGA statistics.
+    - Misc menu now contains searching through alert log. ALERT_LOG is
+      an external table and the new SQL script needed to create it was
+      added to the installation set.
+    - Version change to 1.0.6
+20-Mar-2006
+    - Two new menu entries are added to the "Misc" menu. They show
+      hottest segments from the database with respect to read and
+      writes. This information is extracted from V$SEGMENT_STATISTICS
+    - Pattern matching for free space report was added. It is useful
+      for databases with lots of tablespaces.
+    - SQL Worksheet can is now restricted to certain number of lines,
+      configurable within the "Connection" menu. This was done to prevent
+      queries which return lots of rows from completely devouring memory
+      consumed by the httpd processes. At present, the default limitation 
+      is 500 rows. My intention is to develop a paging mechanism which 
+      will become available in the future versions.
+    - Version change to 1.0.7
+15-Apr-2006
+    - Limitation in the number of rows can be turned off by setting it 
+      to 0 or a negative value.
+    - Tool do describe tables added to the "Misc" menu. Re-creation of 
+      constraints doesn't work because of a bug in DBMS_METADATA. Version 9i
+      cannot construct DDL for any constraint, 10G fails with foreign keys.
+    - Version change to 1.0.8
+29-May-2006
+    - Fixed bug which has prevented foreign keys in "describe table" tool
+      to work correctly.
+    - Added V$SYS_TIME_MODEL to system events in the Instance section. This
+      will only appear if the database version is at least 10.
+    - Added V$SESS_TIME_MODEL to session info in the sessions section. This
+      will only work if the database version is at least 10.
+    - SQL Worksheet now can execute "alter session set current_schema" to 
+      execute selects in another schema. For that, another entry was added to
+      the "Connection" menu. The new entry name is "Schema To Exec SQL". It
+      is constructed the same as other entries, with pattern to limit the 
+      number of returned usernames.
+    - Version change to 1.0.9
+10-Jun-2006
+    - Fixed bug which prevented sessions to show SQL and explain plan. The
+      problem was in the RAW values which apparently cannot be passed as
+      GET parameters. Oracle SQL function hextoraw fixes the problem.
+    - This was also done for the expensive SQL menu.
+    - Session menu can now sort by the allocated PGA. 
+    - Session profile item in the "Session Info" menu will only appear
+      in Oracle 10g.
+    - Session is now started in a separate line, before the HTML headers
+      are sent. This was done for all files, as the implementation on
+      Windows 2000, with Apache 2.0.54 and PHP 5.1.4 was complaining.
+    - Version change to 1.0.10
+10-Jul-2006
+    - Fixed bug using longops to show all sessions with the same sid.
+      serial number is now also being used.
+    - Added output buffering to schema_filter.php to counteract "headers
+      already sent" problems on Win2k.
+    - Added OBJECT_OWNER column to the execution plans. It was needed in
+      the situations where several schemas had objects with the same names.
+    - Started working on a decent paging system for the worksheet. 
+05-Aug-2006
+    - Changed the title to reflect the object name in DDL extraction 
+      script, description script and data script. That will make window
+      interfaces like GNOME and Windows XP show the table name on the 
+      status bar.
+    - Version change to 1.0.11
+24-Aug-2006
+    - Added submenu for logs, archives and DataGuard as a submenu of
+      the "Instance" menu. I'm managing a DG configuration again and
+      the tool is modified accordingly.
+    - config.php now contains the function to make requesting database
+      to have particular version easier.
+    - DBA_Helper can now generate DDL for the Oracle's "dimension objects".
+    - Basic information about histograms and buckets is added to the table
+      description.
+    - Generation of DB links was added to "Get DDL" menu. In Oracle9i, 
+      passwords are clearly visible, while 10g uses "IDENTIFIED BY VALUES".
+      Output format is HTML table.
+    - Options to restrict the number of executions to consider in the
+      "Expensive SQL" menu is added. Sometimes, the most expensive SQL is
+      something like "select sysdate from dual", executed gazillion times. 
+      While that definitely does reveal a design flaw, there are situations 
+      in which we want to restrict the consideration to the statements with 
+      only few executions.
+    - Version change to 1.0.12
+28-Aug-2006
+    - Changed query, thrown out some columns that weren't needed and
+      added the "SIZE" column which accurately reflects the size of the
+      archive. Also, GV$ARCHVED_LOG is being used instead of V$ARCHIVED_LOG
+      to help with RAC.
+    - Redo log status now comes at the beginning of the file as it
+      contains the information that I use most frequently. Also, RAC tables
+      (GV$) are being used instead of the single instance tables.
+    - Fixed some bugs with creating database scripts and ASM. The output is 
+      still ugly, though.
+03-Sep-2006
+    - SGA stat now has pattern search which makes it possible to look
+      for statistics with certain name pattern (hint: "free%").
+    - Added buttons to switch and archive logs archived logs, under
+      DG menu.
+    - Added customized implementation of RMAN "list" commands, under
+      the DG menu.
+    - Worksheet and alert log now have rudimentary paging, no more "maxrows"
+      nonsense. Default page size is 100 but that can be changed through the
+      tool config menu.
+    - Init.php script now queries the instance number and stores it as as
+      session variable. This will be needed for RAC configurations. So far,
+      none of other script uses this but I have a cunning plan....
+    - All session scripts are beautified and made conformant to the programming
+      style in the other scripts.
+    - Version change to 1.0.13
+17-Sep-2006
+    - Table data got pagination. I forgot to do that before.
+    - Resize file now buffers output.
+    - Annoying title "Paritions" is now fixed into "Partitions" in 
+      tab_info.php
+14-Nov-2006
+    - Listing and compilation of invalid objects added to the "Misc Info"
+      menu
+    - Database size is computed and is added to the Resources Info in the 
+      instance menu
+    - Version change to 1.0.14 
+    - dba_helper.obj_info now returns URL to open in a new 
+      window. That affects all of "get DDL" entries.
+    - The "instance_info.php" script no longer shows the output from 
+      V$DATABASE, it is now showing DBA_REGISTRY instead.
+26-Nov-2006
+    - Table description will now include triggers.
+    - Invalid objects menu will now set the pattern to the owner of 
+      the recompiled object, after the "recompile" link is used.
+19-Dec-2006
+    - Rounding added to Free Temp Space
+    - Materialized views added to Get DDL menu.
+    - Fixed bug which was causing "resize file" to return to the
+      "Sessions by CPU" menu.
+26-Dec-2006
+    - ASM free space added to Files & Tablespaces menu.
+10-Jan-2007
+    - Script for searching sessions by SID or SPID now addedd to
+      the "Sessions" menu.
+04-Feb-2007
+    - Script to search for objects based on GV$ACCESS table added to 
+      the "Locks" menu.
+    - Version change to 1.0.15. Many changes have been made, version
+      change is justified.
+09-Feb-2007
+    - PHP 5.2.1 and ADOdb5 were used. No changes necesary, except
+      in the config file.
+04-Mar-2007
+    - Four separate scripts in the schema menu have been replaced by a
+      single script. This was programming at its worst, done in a hurry.
+      Also, sessions can now be filtered so that only active sessions are
+      shown.
+22-Apr-2007
+    - Version change to 1.0.16. 
+    - Longops sorted by time remaining, DESC.
+    - Session search now has many more criteria then SID and SPID. Also,
+      now there is choice between equality and likeness search.
+    - Archive logs and backup now make it possible to search by the date
+      range. That is necessary when having to sift through many backups,
+      looking just for the particular days.
+29-Apr-2007
+    - Fixed a long standing bug with logfile groups in the cr_dbs.php,
+      a script that generates "CREATE DATABASE" command.. Logfile groups need
+      not be a consecutive array of numbers. It is perfectly possible for
+      a database to have logfile group numbers 10, 20 and 30, with nothing
+      between them. Script to re-create the database should now work properly.
+10-May-2007
+    - Ability to search sessions through the entire RAC was added. It still
+      doesn't display informations on the remote sessions. That is planned
+      for some later time. For this to work, "SELECT ANY DICTIONARY" privilege
+      needs to be granted directly to the user executing the tool.
+12-May-2007
+    - Show recyclebin command added to "Misc" menu. This is, clearly, 
+      version 10 specific.
+    - Session search now sorts by instance
+    - Version change to 1.0.17
+19-May-2007
+    - There is an additional setup in the tool configuration to enable
+      the bind values to be shown in the trace files. This is only enabled
+      in version 10 and higher.
+22-May-2007
+    - Tab columns in the table info ("Table Description" menu, under "Misc")
+      are now numerated by a rownum column.
+23-May-2007
+    - Status is now shown for indexes.
+07-Jul-2007
+    - Create user command was added to the "security" menu.
+    - Users can now be dropped.
+    - Version change to 1.0.18
+04-Dec-2007
+    - Backups can now be listed by date.
+    - RMAN jobs can be monitored for Oracle 10g and above
+    - Data Pump jobs can be monitored for Oracle 10g and above
+    - Obsolete parameters are shown, if specified, in the instance->parameters
+      menu
+    - ASM Free space now shows flashback recovery area usage.
+    - Bad bug was fixed in the tool config menu, which was preventing 
+      default date format setting from taking place.
+27-Dec-2007
+    - RMAN job output can be monitored for each job.
+    - DBA_SCHEDULER_JOBS and DBA_JOBS can be monitored from the
+      misc menu.
+    - Version change to 1.0.19
+14-Jan-2008
+    - Bind variable values can now be shown for Oracle9i as well.
+05-Feb-2008
+    - "Find Objects" submenu added to the Misc menu.
+    - Number of sessions now reported beneath the "Sort Sessions" screens.
+    - Fixed a bug in DBMS_HELPER package which prevented showing locked
+      objects in the Lock Holders submenu
+    - Enabled selecting lock holders by username, sid or both.
+    - Version change to 1.0.20.
+04-Mar-2008
+    - Added dependencies view
+    - Plan info changed to hopefully eliminate duplicates and use
+      SQL_ID only.
+    - Schedules are shown with the jobs (DBA_SCHEDULER_JOBS)
+    - Version change to 1.0.21.
+25-Mar-2008
+    - System events now can be used to flush shared pool. The button is
+      beneath the list of all events.
+28-Mar-2008
+    - YAML generation for the Symfony project is added. This tool can now
+      describe table in a way that is compatible with Symfony's "schema.yml"
+      file.
+25-Apr-2008
+    - YAML generation moved to standalone Perl script. 
+    - AWR report generation added to the "Misc" menu.
+    - Menus reorganized to be easier to read. The "Misc" menu was split
+      into two menus.
+    - Expensive SQL menus now show SQL ID for version 10+ so that the SQL
+      statements from the AWR report can be located in the "Expensive SQL"
+      menu.
+    - version change to 1.0.22
+20-JUN-2008
+    - Number of returned records is moved to CSR2HTML function.
+27-JUN-2008
+    - Description of the suitable objects is added to both DDL re-creation
+      and dictionary table descriptions.
+    - Table list now shows compression.
+    - Version change to 1.0.23
+18-JUL-2008
+    - Instance info now observes the configured NLS_DATE_FORMAT.
+23-JUL-2008
+    - Explain plan for the version 10G now uses DBMS_XPLAN.DISPLAY_CURSOR 
+      instead of the custom made query for the version 9i.
+11-AUG-2008
+    - Pattern filtering is now possible for data files, too.
+    - In table information page, basic statistics are now shown for 
+      indexes. That can be used to figure out how likely is CBO to use
+      that index and/or make the index more attractive.
+12-AUG-2008
+    - CSR2ASCII is now buffered to cut down on "print" requests.
+    - Unnecessary circular "require" removed from CSR2ASCII
+    - Security menu now offers to re-create the user 
+    - Version change to 1.0.24
+21-AUG-2008
+    - Recycle bin entry now shows the recycle bin ordered by space
+      consumption. The space is shown in MB.
+01-OCT-2008
+    - ER diagrams added to DB Objects section, "table info" menu.
+    - It is now possible to look for objects being accessed by session
+      in the "Locks" menu.
+    - Version of "show SGA" is now put into the "Memory Statistics"
+      item in the "Instance" section".
+    - Version change to 1.0.25
+11-DEC-2008
+    - Role management added to the tool. 
+24-DEC-2008
+    - Adding data files is now possible for the "normal" tablespaces.
+    - Searching archived logs by thread and sequence is now possible.
+31-DEC-2008
+    - The "time model" is replaced with the "session metric". Basic
+      performance indicators are shown for the session.
+    - Log files are now shown from V$LOG instead of GV$LOG. 
+07-JAN-2009
+    - Additional searching criteria enabled for both DBA jobs and
+      scheduler jobs.
+23-JAN-2009
+    - Fixed bug with the title of "Re-Create User" page.
+    - Select * from V$DATABASE added into the instance_info.php
+    - Invalid objects can now be searched by type, on only by the
+      owner.
+    - Version change to 1.0.26
+29-APR-2009
+    - Added role membership control in "Manage Roles" screen. The "Grant Role"
+      mask no longer goes to the basic DBA_Helper frame and the title is 
+      changed.
+30-APR-2009
+    - Added trace analysis capability. This was done by using the free utility 
+      called TRCANLZR and described in the Metalink note 224270.1. This utility
+      exists for a long time and is compatible with every major datababase 
+      release from 9.2.0 on. The utility has a PL/SQL interface, ideal for being
+      called from PHP. 
+03-MAY-2009
+    - Added the OS CPU load monitoring to the instance menu. It's querying
+      the GV$OSSTAT table. CPU load per instance is calculated as BUSY_TIME/
+      IDLE_TIME and displayed below the stats listing.
+04-MAY-2009
+    - Added monitoring deltas from V$SESSMETRIC.  V$SESSMETRIC table contains
+      the session indicators for a period of 1500 milliseconds. This is 
+      extremely useful for monitoring sessions that is being the most active
+      right now.
+    - The items that were rarely used were removed from the Session Info mask.
+    - Session info mask now shows the session ID on top of the page to avoid
+      confusion when looking at 2 or more sessions.
+    - ER diagram is now shown and saved as a PNG image, not SVG. That should
+      make the output easier to handle, save and display.
+   -  Version change to 1.0.27
+15-MAY-2009
+   - Added a rudimentary "Latches" screen to the lock menu. I used it to 
+     to find out the latch referenced in V$SESSION_WAIT (by address).
+29-AUG-2011
+   - Many changes, this is the first version after a long time. It contains
+     Oracle 11 goodies plus many other changes, too numerous to count.
+15-DEC-2011
+   - Trace file name is now being derived from a simple function in the 
+     DBA_HELPER package. That function is much easier to modify for a 
+     particular database than the original select. The function name is
+     get_trace_file(:SID,:SERIAL) returns VARCHAR2 DETERMINISTIC. This was
+     tested on two Oracle 11.2.0.3 instances, one RAC, one single instance.
+11-FEB-2012     
+   - Added job control functions for DBMS_SCHEDULER and Datapump. Both 
+     scheduler jobs and datapump jobs can now be stopped, killed or restarted.
+   - Latches screen was removed from the lock menu as it was completely 
+     useless. Also, Oracle 11g uses completely different latches mechanism,
+     latches are no longer as important or problematic as they used to be 
+     in the previous versions.
+   - Version change to 1.0.30  
+02-APR-2012
+   - Expensive SQL section rewritten. Now, the tool can show both cumulative
+     and per execution SQL for the CPU, elapsed time and row processed. It 
+     is now also possible to restrict the search on a single schema or schema
+     pattern. This change doesn't warrant a version change.
+26-JAN-2013
+   - Fixed a problem with ER diagrams. The problem was caused by PEAR packages
+     failing in PHP 5.4. The error reporting line had to turn off reporting 
+     errors on all deprecated features.

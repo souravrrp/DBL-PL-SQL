@@ -1,0 +1,96 @@
+/* Formatted on 6/1/2019 11:13:24 AM (QP5 v5.287) */
+SELECT --OPL.PRICE_LIST_ID,
+       --OPLL.PRICE_LIST_LINE_ID,
+       --OPL.START_DATE_ACTIVE,
+       --OPL.END_DATE_ACTIVE,
+       --ATTRIBUTE2, --Transport Mode
+       --OPL.ATTRIBUTE3, --Warehouse_id
+       OPL.NAME,
+       --OPL.DESCRIPTION,
+       OPLL.LIST_PRICE,
+       TO_CHAR (OPLL.START_DATE_ACTIVE) START_ACTIVE_DATE,
+       TO_CHAR (OPLL.END_DATE_ACTIVE) LINE_END_DATE,
+       --OPLL.INVENTORY_ITEM_ID,
+       OPLL.CONCATENATED_SEGMENTS ITEM_CODE,
+       OPLL.ITEM_DESCRIPTION,
+       OPLL.UNIT_CODE
+       ,OPL.*
+  FROM OE_PRICE_LISTS OPL, OE_PRICE_LIST_LINES OPLL
+ WHERE 1 = 1 
+       AND OPL.PRICE_LIST_ID = OPLL.PRICE_LIST_ID 
+--       AND OPL.NAME='ETY-YARN-PL'
+       AND OPLL.END_DATE_ACTIVE IS NULL
+--AND OPLL.CONCATENATED_SEGMENTS='CMNT.SBAG.0004'
+--AND OPLL.UNIT_CODE IN ('BAG','MTN')
+--AND OPLL.ITEM_DESCRIPTION LIKE '%CEM%';
+
+----------------------------PRICING ATTRIBUTE-----------------------------------
+SELECT
+*
+FROM
+QP_PRICING_ATTRIBUTES 
+
+SELECT
+*
+FROM
+QP_LIST_LINES_V 
+
+SELECT
+*
+FROM
+QP_SECU_LIST_HEADERS_V
+
+---------------------------------------QP_MODIFIER_DISCOUNT_VIEW--------------------
+
+SELECT *
+  FROM APPS.XXAKG_QP_MODIFIER_DISCOUNT_V
+ WHERE 1 = 1
+--AND QUALIFIER_ATTR_TYPE='Ship To'
+--and rownum<=2
+;
+---------------------------------------QP_MODIFIER_SUMMARY_VIEW--------------------
+
+SELECT *
+  FROM APPS.QP_MODIFIER_SUMMARY_V
+ WHERE 1 = 1
+--and PRODUCT_ATTR_VALUE='CMNT.SBAG.0001'
+--and list_line_id=1098153
+--and list_header_id=136864  --
+--and operand=435
+--and PRODUCT_ATTR_VAL=24403
+--and PRICING_ATTRIBUTE_ID=136864
+--and ATTRIBUTE_GROUPING_NO=136864
+;
+---------------------------------------QP_MODIFIER_QUALIFIER_VIEW--------------------
+
+SELECT *
+  FROM APPS.QP_QUALIFIERS_V
+ WHERE 1 = 1
+--and LIST_HEADER_ID=1098153
+--and QUALIFIER_ATTR_VALUE=24403
+;
+---------------------------------------ITEM_DETAILS--------------------
+
+SELECT DISTINCT
+       MSIB.SEGMENT1 || '.' || MSIB.SEGMENT2 || '.' || MSIB.SEGMENT3
+          ITEM_CODE,
+       DESCRIPTION ITEM_DESCRIPTION
+  FROM APPS.MTL_SYSTEM_ITEMS_B MSIB
+ WHERE 1 = 1 --AND MSIB.SEGMENT1||'.'||MSIB.SEGMENT2||'.'||MSIB.SEGMENT3=:P_ITEM_CODE-- IN ('CMNT.BAG.0001')
+       AND MSIB.SEGMENT2 IN ('CBAG', 'CBLK') AND ORGANIZATION_ID = 101
+--AND DESCRIPTION LIKE 'CEM%'
+;
+
+--------------------------PRICE LIST HEADER-------------------------------------
+SELECT
+*
+FROM
+OE_PRICE_LISTS_VL
+----SO_PRICE_LISTS_VL
+--XX_MATERIAL_EST_PRICE
+
+--------------------------------------------------------------------------------
+SELECT
+*
+FROM
+XXDBL_PRICELIST_UPLOAD

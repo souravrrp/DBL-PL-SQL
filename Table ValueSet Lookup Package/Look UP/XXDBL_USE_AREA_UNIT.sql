@@ -1,0 +1,13 @@
+/* Formatted on 9/7/2020 10:02:35 AM (QP5 v5.354) */
+SELECT LOOKUP_TYPE,
+       LOOKUP_CODE,
+       MEANING,
+       DESCRIPTION,
+       START_DATE_ACTIVE,
+       END_DATE_ACTIVE,
+       TAG ORGANIZATION_ID,
+       ATTRIBUTE1,
+       ATTRIBUTE2                                                     --,FLV.*
+  FROM FND_LOOKUP_VALUES_VL FLV
+ WHERE 1 = 1 AND LOOKUP_TYPE = 'XXDBL_USE_AREA_UNIT' AND TAG = '186'
+ AND ATTRIBUTE1='JFL KNIT-1'

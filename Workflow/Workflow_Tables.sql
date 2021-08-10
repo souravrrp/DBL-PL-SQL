@@ -1,0 +1,122 @@
+SELECT * FROM APPS.WF_USERS WHERE 1=1
+AND NAME = '103908'
+
+
+SELECT * FROM APPS.WF_ROLES 
+WHERE 1=1
+AND NAME = '103908'
+
+
+SELECT * FROM APPS.WF_USER_ROLES 
+WHERE 1=1
+AND USER_NAME = '103908'
+
+
+SELECT * FROM APPS.WF_USER_ROLE_ASSIGNMENTS 
+WHERE 1=1
+AND USER_NAME = '103908'
+
+
+SELECT
+RECIPIENT_ROLE
+,MESSAGE_TYPE
+,MESSAGE_NAME
+,SUBJECT
+,STATUS
+,BEGIN_DATE
+,SENT_DATE
+--WN.*
+FROM
+APPS.WF_NOTIFICATIONS WN
+WHERE 1=1
+--AND WN.RECIPIENT_ROLE='103908'
+--AND WN.MESSAGE_NAME='HR_EMBD_NTFY_APPROVAL_FWD_MSG'
+--AND WN.MESSAGE_TYPE='HRSSA' -- LIKE '%MO%'
+--AND WN.STATUS='OPEN' --NOT IN ('CLOSED','OPEN')
+
+------------------------------------------------------------------------------------------------
+
+--Workflow Users/Roles
+SELECT * FROM WF_USERS where name = ‘XXUSER’;
+SELECT * FROM WF_ROLES where name = ‘XXUSER’;
+SELECT * FROM WF_USER_ROLES where user_name = ‘XXUSER’;
+SELECT * FROM WF_USER_ROLE_ASSIGNMENTS where user_name = ‘XXUSER’;
+
+–Workflow Item Name and Attributes
+SELECT * FROM WF_ITEM_TYPES where name = ‘OKCAUKAP’; –PO Approval (POAPPRV) ; PO Requisition Approval (REQAPPRV);
+–OM Order Header (OEOH); OM Order Line (OEOL)
+SELECT * FROM WF_ITEM_TYPES_VL where name = ‘OKCAUKAP’;
+SELECT * FROM WF_ITEM_TYPES_VL where display_name like ‘%Approval’;
+SELECT * FROM WF_ITEM_TYPES_VL where description like ‘%Order%’;
+SELECT * FROM WF_ITEM_ATTRIBUTES where item_type = ‘OKCAUKAP’;
+SELECT * FROM WF_ITEM_ATTRIBUTES_TL;
+
+--Workflow Functions
+SELECT * FROM WF_ACTIVITIES where item_type = ‘OKCAUKAP’ and version = 1;
+SELECT * FROM WF_ACTIVITIES_TL where item_type = ‘OKCAUKAP’;
+SELECT * FROM WF_ACTIVITY_ATTRIBUTES where activity_name = ‘CREATE_SOA’;
+SELECT * FROM WF_ACTIVITY_ATTRIBUTES_TL;
+SELECT * FROM WF_ACTIVITY_TRANSITIONS;
+
+--Workflow Lookups
+SELECT * FROM WF_LOOKUPS_TL where lookup_type = ‘OKC_DB_RETRY’;
+
+--Workflow Messages
+SELECT * FROM WF_MESSAGES where type = ‘OKCAUKAP’ and name = ‘APPROVE_CONTRACT’;
+SELECT * FROM WF_MESSAGES_TL where type = ‘OKCAUKAP’ and name = ‘APPROVE_CONTRACT’;
+SELECT * FROM WF_MESSAGE_ATTRIBUTES where message_type = ‘OKCAUKAP’ and message_name = ‘APPROVE_CONTRACT’;
+SELECT * FROM WF_MESSAGE_ATTRIBUTES_TL where message_type = ‘OKCAUKAP’ and message_name = ‘APPROVE_CONTRACT’;
+
+--Workflow Particular item run and values
+SELECT * FROM WF_ITEMS where item_type = ‘OKCAUKAP’ order by begin_date desc;
+–USER_KEY/ITEM_KEY => select * from okc_k_headers_b where contract_number = ‘20683312’;
+SELECT * FROM WF_ITEM_ATTRIBUTE_VALUES where item_type = ‘OKCAUKAP’ and item_key='20683312';
+SELECT * FROM WF_PROCESS_ACTIVITIES where process_item_type = ‘OKCAUKAP’ and process_version = 1;
+
+SELECT * FROM WF_NOTIFICATIONS WHERE MESSAGE_TYPE = ‘OKCAUKAP’ AND MESSAGE_NAME = ‘APPROVE_CONTRACT’;
+SELECT * FROM WF_NOTIFICATION_ATTRIBUTES where notification_id = ;
+
+SELECT * FROM WF_DEFERRED;
+
+---
+SELECT * FROM wf_user_role_assignments
+SELECT * FROM wf_user_roles
+SELECT * FROM wf_roles
+SELECT * FROM wf_items
+SELECT * FROM wf_item_attributes
+SELECT * FROM wf_item_attribute_values
+SELECT * FROM wf_item_attributes_tl
+SELECT * FROM wf_activities
+SELECT * FROM wf_activities_tl
+SELECT * FROM wf_activity_attributes
+SELECT * FROM wf_activity_attributes_tl
+SELECT * FROM wf_activity_transitions
+SELECT * FROM wf_deferred–wf_control
+
+SELECT * FROM WF_ACTIVITY_ATTR_VALUES
+WHERE NAME LIKE ‘%MAST%’
+AND PROCESS_ACTIVITY_ID
+IN(
+SELECT *– PROCESS_ACTIVITY
+FROM WF_ITEM_ACTIVITY_STATUSES
+WHERE ITEM_TYPE = ‘OEOH’
+AND ITEM_KEY ='62348'
+)
+
+SELECT * FROM WF_ITEM_TYPES
+SELECT * FROM WF_LOOKUPS_TL
+SELECT * FROM WF_NOTIFICATIONS
+WHERE MESSAGE_TYPE =’TEST’
+ORDER BY BEGIN_DATE DESC
+
+SELECT * FROM WF_NOTIFICATION_ATTRIBUTES
+SELECT * FROM WF_MESSAGES
+SELECT * FROM WF_MESSAGES_TL
+SELECT * FROM WF_MESSAGE_ATTRIBUTES
+SELECT * FROM WF_MESSAGE_ATTRIBUTES_TL
+SELECT * FROM WF_ETS
+SELECT * FROM WF_PROCESS_ACTIVITIES
+
+
+
+------------------------------------------------------------------------------------------------

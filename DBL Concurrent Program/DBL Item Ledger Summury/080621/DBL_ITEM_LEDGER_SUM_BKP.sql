@@ -1,0 +1,568 @@
+/* Formatted on 1/20/2021 4:37:16 PM (QP5 v5.354) */
+  SELECT ORGANIZATION_CODE,
+         ORG_ID,
+         ITEM_ID,
+         ITEM_CATG,
+         ITEM_TYPE,
+         ITEM_CODE,
+         ITEM_DESCRIPTION,
+         P_UOM,
+         NVL (SUM (OPEN_BAL), 0)            OPBAL,
+         NVL (SUM (PO_RCV), 0)              PO_RCV,
+         NVL (SUM (INV_PROD_RCV), 0)        PROD_RCV,
+         NVL (SUM (INV_OTHER_RCV), 0)       INV_O_RCV,
+         NVL (SUM (INV_INTERORG_RCV), 0)    INV_ITRORG_RCV,
+         NVL (SUM (INV_LOAN_RCV), 0)        INV_LOAN_RCV,
+         NVL (SUM (INV_AAL_RCV), 0)         INV_A_RCV,
+         NVL (SUM (INV_MISC_RCV), 0)        INV_MISC_RCV,
+           NVL (SUM (PO_RCV), 0)
+         + NVL (SUM (INV_OTHER_RCV), 0)
+         + NVL (SUM (INV_INTERORG_RCV), 0)
+         + NVL (SUM (INV_AAL_RCV), 0)
+         + NVL (SUM (INV_LOAN_RCV), 0)
+         + NVL (SUM (INV_PROD_RCV), 0)
+         + NVL (SUM (MOV_ORD_RTN_RCV), 0) --ADDED_BY_SOURAV_MOVE_ORDER_RETURN_ON 01-DEC-20
+         + NVL (SUM (INV_MISC_RCV), 0)      AS T_RCV,
+         NVL (SUM (RMA_RCV), 0)             RMA_RCVQ,
+         NVL (SUM (RCV_QTY), 0)             RCVQ,
+         NVL (SUM (ISU_QTY), 0)             ISUQ,
+         NVL (SUM (INV_OTHER_ISU), 0)       INV_O_ISU,
+         NVL (SUM (INV_INTERORG_ISU), 0)    INV_ITRORG_ISU,
+         NVL (SUM (INV_LOAN_ISU), 0)        INV_LOAN_ISU,
+         NVL (SUM (INV_AAL_ISU), 0)         INV_A_ISU,
+         NVL (SUM (INV_MO_ISU), 0)          INV_MO_ISU,
+         NVL (SUM (INV_SO_ISU), 0)          INV_SO_ISU,
+         NVL (SUM (INV_PROD_ISU), 0)        INV_PROD_ISU,
+         NVL (SUM (INV_MISC_ISU), 0)        INV_MISC_ISU,
+           NVL (SUM (INV_OTHER_ISU), 0)
+         + NVL (SUM (INV_AAL_ISU), 0)
+         + NVL (SUM (INV_INTERORG_ISU), 0)
+         + NVL (SUM (INV_MO_ISU), 0)
+         + NVL (SUM (INV_LOAN_ISU), 0)
+         + NVL (SUM (INV_SO_ISU), 0)
+         + NVL (SUM (INV_PROD_ISU), 0)
+         + NVL (SUM (INV_MISC_ISU), 0)      AS T_ISSU
+    FROM (SELECT OOD.ORGANIZATION_CODE,
+                 MMT.ORGANIZATION_ID          ORG_ID,
+                 MSI.INVENTORY_ITEM_ID        ITEM_ID,
+                 MIC.SEGMENT2                 AS ITEM_CATG,
+                 MIC.SEGMENT3                 AS ITEM_TYPE,
+                 MSI.CONCATENATED_SEGMENTS    ITEM_CODE,
+                 MSI.DESCRIPTION              ITEM_DESCRIPTION,
+                 MSI.PRIMARY_UOM_CODE         AS P_UOM,
+                 MMT.SECONDARY_UOM_CODE       AS S_UOM,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1 THEN MMT.PRIMARY_QUANTITY
+                     ELSE 0
+                 END                          OPEN_BAL,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE MMT.TRANSACTION_SOURCE_TYPE_ID
+                             WHEN 1 THEN PRIMARY_QUANTITY
+                         END
+                 END                          PO_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN (64,
+                                                                      96,
+                                                                      50,
+                                                                      5,
+                                                                      9,
+                                                                      2,
+                                                                      51,
+                                                                      66,
+                                                                      67,
+                                                                      68)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_OTHER_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN
+                                              (44, 43, 1002)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_PROD_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN
+                                              (3, 12, 21)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_INTERORG_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID = 42
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_MISC_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE MMT.TRANSACTION_SOURCE_TYPE_ID
+                                     WHEN 6
+                                     THEN
+                                         CASE
+                                             WHEN MMT.TRANSACTION_SOURCE_ID IN
+                                                      (144,
+                                                       148,
+                                                       152,
+                                                       156,
+                                                       160,
+                                                       164,
+                                                       168,
+                                                       172,
+                                                       176,
+                                                       180,
+                                                       220,
+                                                       402,
+                                                       404,
+                                                       406,
+                                                       408,
+                                                       410,
+                                                       412,
+                                                       444,
+                                                       448,
+                                                       452,
+                                                       456,
+                                                       460,
+                                                       464,
+                                                       562,
+                                                       584,
+                                                       606,
+                                                       658,
+                                                       846,
+                                                       848)
+                                             THEN
+                                                 PRIMARY_QUANTITY
+                                             ELSE
+                                                 0
+                                         END
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_LOAN_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE MMT.TRANSACTION_SOURCE_TYPE_ID
+                                     WHEN 6
+                                     THEN
+                                         CASE
+                                             WHEN MMT.TRANSACTION_SOURCE_ID NOT IN
+                                                      (144,
+                                                       148,
+                                                       152,
+                                                       156,
+                                                       160,
+                                                       164,
+                                                       168,
+                                                       172,
+                                                       176,
+                                                       180,
+                                                       220,
+                                                       402,
+                                                       404,
+                                                       406,
+                                                       408,
+                                                       410,
+                                                       412,
+                                                       444,
+                                                       448,
+                                                       452,
+                                                       456,
+                                                       460,
+                                                       464,
+                                                       562,
+                                                       584,
+                                                       606,
+                                                       658,
+                                                       846,
+                                                       848)
+                                             THEN
+                                                 PRIMARY_QUANTITY
+                                             ELSE
+                                                 0
+                                         END
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_AAL_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1 THEN MMT.PRIMARY_QUANTITY
+                             ELSE 0
+                         END
+                 END                          RCV_QTY,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE
+                             WHEN MMT.TRANSACTION_TYPE_ID = 15
+                             THEN
+                                 NVL (PRIMARY_QUANTITY, 0)
+                             ELSE
+                                 0
+                         END
+                 END                          RMA_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN 1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID = 121
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          MOV_ORD_RTN_RCV,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1 THEN MMT.PRIMARY_QUANTITY
+                             ELSE 0
+                         END
+                 END                          ISU_QTY,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN (64,
+                                                                      96,
+                                                                      50,
+                                                                      5,
+                                                                      9,
+                                                                      2,
+                                                                      51,
+                                                                      66,
+                                                                      67,
+                                                                      68)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_OTHER_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID = 32
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_MISC_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN
+                                              (3, 12, 21)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_INTERORG_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID IN
+                                              (1003, 17, 35)
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_PROD_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE
+                                     WHEN MMT.TRANSACTION_TYPE_ID = 33
+                                     THEN
+                                         PRIMARY_QUANTITY
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_SO_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE MMT.TRANSACTION_SOURCE_TYPE_ID
+                                     WHEN 6
+                                     THEN
+                                         CASE
+                                             WHEN MMT.TRANSACTION_SOURCE_ID IN
+                                                      (542,
+                                                       414,
+                                                       416,
+                                                       418,
+                                                       420,
+                                                       422,
+                                                       424,
+                                                       142,
+                                                       146,
+                                                       150,
+                                                       154,
+                                                       158,
+                                                       162,
+                                                       166,
+                                                       170,
+                                                       174,
+                                                       178,
+                                                       222,
+                                                       442,
+                                                       446,
+                                                       450,
+                                                       454,
+                                                       458,
+                                                       462,
+                                                       656,
+                                                       844,
+                                                       850,
+                                                       564,
+                                                       582)
+                                             THEN
+                                                 PRIMARY_QUANTITY
+                                             ELSE
+                                                 0
+                                         END
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_LOAN_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE MMT.TRANSACTION_SOURCE_TYPE_ID
+                                     WHEN 6
+                                     THEN
+                                         CASE
+                                             WHEN MMT.TRANSACTION_SOURCE_ID NOT IN
+                                                      (542,
+                                                       414,
+                                                       416,
+                                                       418,
+                                                       420,
+                                                       422,
+                                                       424,
+                                                       142,
+                                                       146,
+                                                       150,
+                                                       154,
+                                                       158,
+                                                       162,
+                                                       166,
+                                                       170,
+                                                       174,
+                                                       178,
+                                                       222,
+                                                       442,
+                                                       446,
+                                                       450,
+                                                       454,
+                                                       458,
+                                                       462,
+                                                       656,
+                                                       844,
+                                                       850,
+                                                       564,
+                                                       582)
+                                             THEN
+                                                 PRIMARY_QUANTITY
+                                             ELSE
+                                                 0
+                                         END
+                                     ELSE
+                                         0
+                                 END
+                         END
+                 END                          INV_AAL_ISU,
+                 CASE SIGN (MMT.TRANSACTION_DATE - :P_DATE_FROM)
+                     WHEN -1
+                     THEN
+                         0
+                     ELSE
+                         CASE SIGN (MMT.PRIMARY_QUANTITY)
+                             WHEN -1
+                             THEN
+                                 CASE MMT.TRANSACTION_TYPE_ID
+                                     WHEN 63 THEN PRIMARY_QUANTITY
+                                     ELSE 0
+                                 END
+                         END
+                 END                          INV_MO_ISU
+            FROM INV.MTL_MATERIAL_TRANSACTIONS    MMT,
+                 APPS.MTL_SYSTEM_ITEMS_B_KFV      MSI,
+                 APPS.MTL_ITEM_CATEGORIES_V       MIC,
+                 APPS.ORG_ORGANIZATION_DEFINITIONS OOD
+           WHERE     MMT.INVENTORY_ITEM_ID = MSI.INVENTORY_ITEM_ID
+                 AND MMT.ORGANIZATION_ID = MSI.ORGANIZATION_ID
+                 AND MSI.INVENTORY_ITEM_ID = MIC.INVENTORY_ITEM_ID
+                 AND MSI.ORGANIZATION_ID = MIC.ORGANIZATION_ID
+                 AND MMT.ORGANIZATION_ID = OOD.ORGANIZATION_ID
+                 AND MIC.CATEGORY_SET_ID = 1
+                 AND TO_CHAR (MMT.TRANSACTION_TYPE_ID) NOT IN
+                         (TO_CHAR ( :CP_TRX_TYPE))
+                 --AND MMT.TRANSACTION_TYPE_ID <> 98
+                 AND (LOGICAL_TRANSACTION = 2 OR LOGICAL_TRANSACTION IS NULL)
+                 --AND MMT.TRANSACTION_TYPE_ID NOT IN (80, 98, 99, 120, 52, 26, 64)
+                 AND MMT.ORGANIZATION_ID =
+                     NVL ( :P_ORG_ID, MMT.ORGANIZATION_ID)
+                 AND MMT.SUBINVENTORY_CODE =
+                     NVL ( :P_SUB_INV, MMT.SUBINVENTORY_CODE)
+                 AND MSI.CONCATENATED_SEGMENTS =
+                     NVL ( :P_ITEM, MSI.CONCATENATED_SEGMENTS)
+                 AND MIC.SEGMENT3 = NVL ( :P_ITEM_TYPE, MIC.SEGMENT3)
+                 AND MIC.SEGMENT2 = NVL ( :P_ITEM_CATEGORY, MIC.SEGMENT2)
+                 -- AND MSI.CONCATENATED_SEGMENTS = 'PAMCAR00000000000035'
+                 AND MIC.CATEGORY_CONCAT_SEGS NOT LIKE
+                         'ECO THREAD.SEMI FINISH GOODS%'
+                 AND MMT.TRANSACTION_DATE BETWEEN '01-JAN-2010'
+                                              AND :P_DATE_TO + .99999)
+GROUP BY ORGANIZATION_CODE,
+         ORG_ID,
+         ITEM_ID,
+         ITEM_CATG,
+         ITEM_TYPE,
+         ITEM_CODE,
+         ITEM_DESCRIPTION,
+         P_UOM
+  HAVING    SUM (OPEN_BAL) <> 0
+         OR SUM (PO_RCV) <> 0
+         OR SUM (INV_PROD_RCV) <> 0
+         OR SUM (INV_OTHER_RCV) <> 0
+         OR SUM (INV_INTERORG_RCV) <> 0
+         OR SUM (INV_LOAN_RCV) <> 0
+         OR SUM (INV_AAL_RCV) <> 0
+         OR SUM (INV_MISC_RCV) <> 0
+         OR SUM (RMA_RCV) <> 0
+         OR SUM (RCV_QTY) <> 0
+         OR SUM (ISU_QTY) <> 0
+         OR SUM (INV_OTHER_ISU) <> 0
+         OR SUM (INV_INTERORG_ISU) <> 0
+         OR SUM (INV_LOAN_ISU) <> 0
+         OR SUM (INV_AAL_ISU) <> 0
+         OR SUM (INV_MO_ISU) <> 0
+         OR SUM (INV_SO_ISU) <> 0
+         OR SUM (INV_PROD_ISU) <> 0
+         OR SUM (INV_MISC_ISU) <> 0

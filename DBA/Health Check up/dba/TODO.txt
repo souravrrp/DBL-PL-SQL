@@ -1,0 +1,8 @@
+- Add capacity planning features. Add the schema objects and remove the 
+  dba_helper from the SYSTEM schema.
+- Rethink and rewrite the dba_helper  package. The multitude of functions
+  is becoming irritating.
+- Show graphs and charts about disk consumption per tablespace, per user,
+  per table and per database.
+- Add screens about scheduler, autotasks and baselines, all 11g specific.
+- Use PHAR extension to cram the entire package into a single file.

@@ -1,0 +1,158 @@
+public List<CCL2_Product_Line_Wise_RM_Consumption> Load_CCL2_Product_Line_Wise_RM_Consumption_Print(string StartDate, string EndDate)
+        {
+            DataTable dt = new DataTable();
+            string Error = string.Empty;
+            OracleConnection con = new OracleConnection();
+            List<CCL2_Product_Line_Wise_RM_Consumption> dataList = new List<CCL2_Product_Line_Wise_RM_Consumption>();
+            try
+            {
+                con = clsDataprocess.OpenOracleDB();
+                string Query = string.Empty;
+                Query = @"SELECT
+       item_code,
+       description,
+       major_category,
+       minor_category,
+       product_line,
+       SUM(plan_qty) quantity,
+       primary_uom_code
+FROM
+(SELECT msi.segment1 AS item_code,
+       msi.description,
+       t.major_category,
+       t.minor_category,
+       t.group_name product_line,
+       d.plan_qty,
+       msi.primary_uom_code
+  FROM gme.gme_batch_header h,
+       gme.gme_material_details d,
+       apps.mtl_system_items_b msi,
+       (SELECT t.batch_id,
+               t.batch_no AS parent_batch,
+               p.batch_no,
+               bb.group_name,
+               t.major_category,
+               t.minor_category,
+               t.transaction_date
+          FROM (SELECT h.batch_id,
+                       h.batch_no,
+                       d.phantom_id,
+                       cat.segment2 major_category,
+                       cat.segment3 minor_category,
+                       mmt.transaction_date
+                  FROM gme.gme_batch_header h,
+                       apps.gme_material_details d,
+                       apps.mtl_item_categories_v cat,
+                       mtl_material_transactions mmt
+                 WHERE     h.batch_id = d.batch_id
+                       AND h.batch_id = mmt.transaction_source_id
+                       AND d.inventory_item_id = cat.inventory_item_id
+                       AND d.organization_id = cat.organization_id
+                       AND (cat.segment2 in (  'SEMI FINISH GOODS') and  cat.segment2 not in ( 'NA'))
+AND TO_DATE(mmt.transaction_date,'DD/MM/RRRR hh12:mi:ssAM') BETWEEN TO_DATE(:p_StartDate,'DD/MM/RRRR hh12:mi:ssAM') AND TO_DATE(:p_EndDate,'DD/MM/RRRR hh12:mi:ssAM')
+                                                         ) t
+               LEFT OUTER JOIN gme.gme_batch_header p
+                  ON NVL (p.batch_id, 0) = NVL (t.phantom_id, 0)
+               INNER JOIN gme_batch_groups_association ga
+                  ON t.batch_id = ga.batch_id
+               INNER JOIN gme_batch_groups_b bb ON ga.GROUP_ID = bb.GROUP_ID 
+                                                                            )
+       t
+ WHERE     h.batch_id = d.batch_id
+       AND h.batch_no = t.batch_no
+       AND msi.inventory_item_id = d.inventory_item_id
+       AND msi.organization_id = d.organization_id
+       AND line_type = -1
+       AND d.plan_qty IS NOT NULL
+       AND d.organization_id = 150
+UNION
+SELECT msi.segment1 AS item_code,
+       msi.description,
+       cat.segment2 major_category,
+       cat.segment3 minor_category,
+       bb.group_name,
+       d.plan_qty,
+       msi.primary_uom_code
+  FROM gme.gme_batch_header h,
+       gme.gme_material_details d,
+       apps.mtl_system_items_b msi,
+       apps.mtl_item_categories_v cat,
+       gme_batch_groups_association ga,
+       gme_batch_groups_b bb,
+       mtl_material_transactions mmt
+ WHERE     h.batch_id = d.batch_id
+       AND msi.inventory_item_id = d.inventory_item_id
+       AND msi.organization_id = d.organization_id
+       AND msi.inventory_item_id = cat.inventory_item_id
+       AND msi.organization_id = cat.organization_id
+       AND h.batch_id = ga.batch_id
+       AND ga.GROUP_ID = bb.GROUP_ID
+       AND d.organization_id = 150
+       AND cat.SEGMENT2 = 'RAW MATERIAL'
+       AND line_type = -1
+       AND d.plan_qty IS NOT NULL
+       AND h.batch_id = mmt.transaction_source_id
+AND TO_DATE(mmt.transaction_date,'DD/MM/RRRR hh12:mi:ssAM') BETWEEN TO_DATE(:p_StartDate,'DD/MM/RRRR hh12:mi:ssAM') AND TO_DATE(:p_EndDate,'DD/MM/RRRR hh12:mi:ssAM')
+       GROUP BY
+               item_code,
+               description,
+               major_category,
+               minor_category,
+               product_line,
+               primary_uom_code;
+";
+
+                OracleCommand cmd = new OracleCommand(Query, con);
+                cmd.CommandType = CommandType.Text;
+                OracleDataAdapter adapter = new OracleDataAdapter(cmd);
+                OracleParameter oStart;
+                OracleParameter oEnd;
+
+                oStart = cmd.CreateParameter();
+                oEnd = cmd.CreateParameter();
+
+                oStart.ParameterName = "p_StartDate";
+                oStart.OracleDbType = OracleDbType.Date;
+                oStart.Value = DateTime.Parse(StartDate);
+                cmd.Parameters.Add(oStart);
+
+                oEnd.ParameterName = "p_EndDate";
+                oEnd.OracleDbType = OracleDbType.Date;
+                oEnd.Value = DateTime.Parse(EndDate);
+                cmd.Parameters.Add(oEnd);
+                adapter.Fill(dt);
+            }
+            catch (Exception ex)
+            {
+                Error = ex.ToString();
+            }
+            finally
+            {
+                clsDataprocess.CloseOracleDB(con);
+            }
+            if (Error.Length > 0)
+            {
+                return dataList;
+            }
+            else
+            {
+                if (dt.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        CCL2_Product_Line_Wise_RM_Consumption dataItem = new CCL2_Product_Line_Wise_RM_Consumption();
+                        dataItem.ITEM_CODE = dt.Rows[i]["ITEM_CODE"].ToString();
+                        dataItem.DESCRIPTION = dt.Rows[i]["DESCRIPTION"].ToString();
+                        dataItem.UOM_CODE = dt.Rows[i]["UOM_CODE"].ToString();
+                        dataItem.MAJOR_CATEGORY = dt.Rows[i]["MAJOR_CATEGORY"].ToString();
+                        dataItem.MINOR_CATEGORY = dt.Rows[i]["MINOR_CATEGORY"].ToString();
+                        dataItem.PRODUCT_LINE = dt.Rows[i]["PRODUCT_LINE"].ToString();
+                        dataItem.QUANTITY = dt.Rows[i]["QUANTITY"].ToString();
+                        dataList.Add(dataItem);
+                    }
+                }
+            }
+            return dataList;
+        }
+
+        #endregion Start :: Product Line Wise RM Consumption Report

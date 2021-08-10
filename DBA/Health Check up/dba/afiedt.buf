@@ -1,0 +1,24 @@
+create or replace procedure test_ncomp
+as
+type numtab is table of number; 
+num_tab numtab:=numtab();
+num_avg number:=0;
+num_sum number:=0;
+begin
+for i in 1..50000000 
+loop
+    num_tab.extend;
+    num_tab(i):=i;
+    num_sum:=num_sum+i;
+end loop;
+num_avg:=num_sum/50000000;
+dbms_output.put_line('SUM='||num_sum||' '||'AVG='||num_avg);
+num_sum:=0;
+for i in 1..50000000 
+loop
+num_sum:=num_sum+num_tab(i);
+end loop;
+num_avg:=num_sum/50000000;
+dbms_output.put_line('SUM='||num_sum||' '||'AVG='||num_avg);
+end test_ncomp;
+/

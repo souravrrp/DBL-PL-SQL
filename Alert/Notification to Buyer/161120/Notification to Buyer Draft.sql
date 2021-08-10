@@ -1,0 +1,38 @@
+/* Formatted on 11/16/2020 2:35:56 PM (QP5 v5.354) */
+SELECT DISTINCT
+       hou.name,
+       prha.segment1
+           req_num,
+       prha.description,
+       prha.creation_date
+           fecha_creacion,
+       prha.approved_date
+           fecha_aprob,
+       TO_CHAR (fuser.user_name)
+           User_id,
+       (ppf.first_name || ' ' || ppf.middle_names || ' ' || ppf.last_name)
+           za_Requester,
+       papf.email_address
+           buyer_email,
+       papf.*
+  FROM po_requisition_headers_all  prha,
+       apps.hr_operating_units     hou,
+       po_requisition_lines_all    prla,
+       fnd_user                    fu,
+       fnd_user                    fuser,
+       apps.per_all_people_f       ppf,
+       apps.per_all_people_f       papf
+ WHERE     prha.requisition_header_id = prla.requisition_header_id
+       AND fu.employee_id = prla.suggested_buyer_id
+       AND prha.preparer_id = ppf.person_id(+)
+       AND fu.employee_id = papf.person_id(+)
+       AND ppf.person_id = fuser.employee_id(+)
+       AND hou.organization_id = prha.org_id
+       AND NVL (prha.cancel_flag, 'N') = 'N'
+       AND prha.authorization_status = 'APPROVED'
+       AND prha.approved_date IS NOT NULL
+       AND prha.segment1 = '10521007526'
+       AND TRUNC (SYSDATE) BETWEEN TRUNC (ppf.effective_start_date)
+                               AND TRUNC (ppf.effective_end_date)
+       AND TRUNC (SYSDATE) BETWEEN TRUNC (papf.effective_start_date)
+                               AND TRUNC (papf.effective_end_date);

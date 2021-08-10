@@ -1,0 +1,78 @@
+/* Formatted on 1/16/2020 11:19:23 AM (QP5 v5.287) */
+SELECT (CASE
+           WHEN     PHA.VENDOR_ID = '1517'
+                AND ORG.OPERATING_UNIT = 135
+           THEN
+              NTH_VALUE (
+                 PHA.SEGMENT1,
+                 2)
+              OVER (
+                 PARTITION BY MSI.SEGMENT1
+                 ORDER BY PHA.APPROVED_DATE DESC
+                 RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+           ELSE
+              PHA.SEGMENT1
+        END)
+          SEGMENT1,
+       (CASE
+           WHEN     PHA.VENDOR_ID = '1517'
+                AND ORG.OPERATING_UNIT = 135
+           THEN
+              NTH_VALUE (
+                 PHA.CURRENCY_CODE,
+                 2)
+              OVER (
+                 PARTITION BY MSI.SEGMENT1
+                 ORDER BY PHA.APPROVED_DATE DESC
+                 RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+           ELSE
+              PHA.CURRENCY_CODE
+        END) CURRENCY_CODE,
+       (CASE
+           WHEN     PHA.VENDOR_ID = '1517'
+                AND ORG.OPERATING_UNIT = 135
+           THEN
+              NTH_VALUE (
+                 PLA.UNIT_PRICE,
+                 2)
+              OVER (
+                 PARTITION BY MSI.SEGMENT1
+                 ORDER BY PHA.APPROVED_DATE DESC
+                 RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+           ELSE
+              PLA.UNIT_PRICE
+        END) UNIT_PRICE,
+        (CASE
+           WHEN     PHA.VENDOR_ID = '1517'
+                AND ORG.OPERATING_UNIT = 135
+           THEN
+              NTH_VALUE (
+                 PHA.RATE,
+                 2)
+              OVER (
+                 PARTITION BY MSI.SEGMENT1
+                 ORDER BY PHA.APPROVED_DATE DESC
+                 RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+           ELSE
+              PHA.RATE
+        END) RATE
+  FROM PO_HEADERS_ALL PHA,
+       PO_LINES_ALL PLA,
+       PO_LINE_LOCATIONS_ALL PLL,
+       MTL_SYSTEM_ITEMS_B MSI,
+       ORG_ORGANIZATION_DEFINITIONS ORG,
+       HR_OPERATING_UNITS HOU
+ WHERE     PHA.PO_HEADER_ID = PLA.PO_HEADER_ID
+       AND PHA.ORG_ID = PLA.ORG_ID
+       AND PHA.ORG_ID = HOU.ORGANIZATION_ID
+       AND PHA.PO_HEADER_ID = PLL.PO_HEADER_ID
+       AND PLA.PO_LINE_ID = PLL.PO_LINE_ID
+       AND PLA.ITEM_ID = MSI.INVENTORY_ITEM_ID
+       AND PLL.SHIP_TO_ORGANIZATION_ID = MSI.ORGANIZATION_ID
+       AND PLL.SHIP_TO_ORGANIZATION_ID = ORG.ORGANIZATION_ID
+       AND TYPE_LOOKUP_CODE = 'STANDARD'
+       AND MSI.SEGMENT1 = MSI.SEGMENT1
+       AND MSI.INVENTORY_ITEM_ID = 7297
+       AND PHA.AUTHORIZATION_STATUS = 'APPROVED'
+--AND PHA.VENDOR_ID!='1517'
+--AND ORG.OPERATING_UNIT!=135

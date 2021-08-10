@@ -1,0 +1,22 @@
+SELECT
+*
+FROM
+XX_FDR_DETAILS
+WHERE 1=1
+
+--------------------------------------------------------------------------------
+SELECT
+*
+FROM
+XX_FDR_DETAILS FD
+,XX_FDR_LINE_DETAILS FLD
+WHERE 1=1
+AND FD.FDR_ID=FLD.FDR_ID
+AND FDR_NUMBER='03560100204312'
+
+SELECT
+*
+FROM
+XX_FDR_LINE_DETAILS
+WHERE 1=1
+AND FDR_ID='10141'

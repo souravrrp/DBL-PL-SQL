@@ -1,0 +1,57 @@
+/* Formatted on 29/Jan/20 2:53:51 PM (QP5 v5.227.12220.39754) */
+  SELECT ood.ORGANIZATION_CODE,
+         ood.ORGANIZATION_NAME,
+         mmt.ORGANIZATION_ID,
+         msi.inventory_item_id item_id,
+         msi.CONCATENATED_SEGMENTS AS ITEM_CODE,
+         msi.description AS DESCRIPTION,
+         mmt.TRANSACTION_UOM,
+         msi.primary_uom_code AS p_uom,
+         mmt.secondary_uom_code AS s_uom,
+         mic.segment2 AS item_catg,
+         mic.segment3 AS item_type,
+         mmt.SUBINVENTORY_CODE,
+         mtl.ATTRIBUTE1 AS BRAND,
+         mtl.LOT_NUMBER,
+         SUM (NVL (mtln.PRIMARY_QUANTITY, mmt.PRIMARY_QUANTITY)) AS ON_HAND
+    FROM inv.mtl_material_transactions mmt,
+         APPS.mtl_system_items_b_kfv msi,
+         apps.mtl_item_categories_v mic,
+         apps.mtl_transaction_lot_numbers mtln,
+         apps.mtl_lot_numbers mtl,
+         apps.ORG_ORGANIZATION_DEFINITIONS OOD
+   WHERE     mmt.inventory_item_id = msi.inventory_item_id
+         AND mmt.organization_id = msi.organization_id
+         AND msi.inventory_item_id = mic.inventory_item_id
+         AND msi.organization_id = mic.organization_id
+         AND mmt.transaction_id = mtln.transaction_id(+)
+         AND mtln.inventory_item_id = mtl.inventory_item_id(+)
+         AND mtln.organization_id = mtl.organization_id(+)
+         AND mtln.lot_number = mtl.lot_number(+)
+         AND mmt.organization_id = ood.organization_id
+         AND mic.category_set_id = 1
+         AND mmt.transaction_type_id <> 98
+         AND mmt.transaction_action_id != 24
+         AND (LOGICAL_TRANSACTION = 2 OR LOGICAL_TRANSACTION IS NULL)
+         AND MIC.SEGMENT3 = 'YARN'
+         AND mmt.SUBINVENTORY_CODE NOT LIKE 'DYR%'
+         AND OOD.ORGANIZATION_CODE IN
+                ('113', '133', '143', '152', '163', '183')
+         AND mmt.transaction_date <= NVL (:P_date_to, SYSDATE) + .99999
+GROUP BY ood.organization_code,
+         ood.ORGANIZATION_NAME,
+         mmt.SUBINVENTORY_CODE,
+         mmt.organization_id,
+         msi.inventory_item_id,
+         msi.CONCATENATED_SEGMENTS,
+         msi.description,
+         mmt.TRANSACTION_UOM,
+         msi.primary_uom_code,
+         mmt.secondary_uom_code,
+         mic.segment2,
+         mic.segment3,
+         mmt.subinventory_code,
+         mtl.ATTRIBUTE1,
+         mtl.lot_number
+  HAVING SUM (mtln.PRIMARY_QUANTITY) <> 0
+ORDER BY ood.ORGANIZATION_NAME, MSI.SEGMENT1

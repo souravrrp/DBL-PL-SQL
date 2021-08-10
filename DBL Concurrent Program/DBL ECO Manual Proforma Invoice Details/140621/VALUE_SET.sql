@@ -1,0 +1,8 @@
+/* Formatted on 6/14/2021 9:41:35 AM (QP5 v5.354) */
+SELECT *
+  FROM XXDBL.XXDBL_MANUAL_PI_HEADER MPH
+ WHERE     1 = 1
+       AND STATUS = 'CONFIRMED'
+       --AND manual_pi_number IN ('MPI-1000200')
+       AND (   :P_MANUAL_PI_NUMBER IS NULL
+            OR (MPH.MANUAL_PI_NUMBER = :P_MANUAL_PI_NUMBER));

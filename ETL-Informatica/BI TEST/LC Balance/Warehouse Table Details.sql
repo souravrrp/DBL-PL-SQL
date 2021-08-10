@@ -1,0 +1,22 @@
+select
+*
+from
+W_RCV_TRANSACTIONS;
+
+TRUNCATE TABLE W_RCV_TRANSACTIONS;
+
+SELECT
+*
+FROM
+W_PO_HEADERS_ALL
+
+select
+*
+from
+W_AP_SUPPLIERS
+
+
+select
+*
+from
+W_PO_LINE_LOCATIONS_ALL

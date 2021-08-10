@@ -1,0 +1,68 @@
+/* Formatted on 1/30/2020 1:00:32 PM (QP5 v5.287) */
+  SELECT OOD.ORGANIZATION_CODE,
+         OOD.ORGANIZATION_NAME,
+         MMT.SUBINVENTORY_CODE,
+         MMT.TRANSACTION_UOM,
+         MMT.TRANSACTION_DATE,
+         TO_CHAR (MMT.TRANSACTION_DATE, 'Month') AS TRANSACTION_MONTH,
+         MMT.SOURCE_CODE,
+         MTT.TRANSACTION_TYPE_NAME,
+         MSIB.SEGMENT1 ITEMCODE,
+         MSIB.DESCRIPTION,
+         MLN.ATTRIBUTE1 BRAND,
+         MLN.LOT_NUMBER,
+         C.CUSTOMER_NAME AS BUYER,
+         SUM (MMT.PRIMARY_QUANTITY) QTY_KG,
+         ROUND (
+              (SUM (MMT.PRIMARY_QUANTITY) * SUM (MMT.NEW_COST))
+            / SUM (MMT.PRIMARY_QUANTITY),
+            2)
+            RATE
+    FROM MTL_MATERIAL_TRANSACTIONS MMT,
+         MTL_TRANSACTION_TYPES MTT,
+         MTL_SYSTEM_ITEMS_B MSIB,
+         APPS.MTL_TRANSACTION_LOT_NUMBERS MLT,
+         APPS.MTL_LOT_NUMBERS MLN,
+         APPS.ORG_ORGANIZATION_DEFINITIONS OOD,
+         APPS.MTL_ITEM_CATEGORIES_V MIC,
+         (SELECT TR.TRANSACTION_ID, C.CUSTOMER_NAME
+            FROM MTL_MATERIAL_TRANSACTIONS TR, AR_CUSTOMERS C
+           WHERE     TO_NUMBER (NVL (TR.ATTRIBUTE2, '0')) = C.CUSTOMER_ID
+                 AND TR.ATTRIBUTE_CATEGORY = 'Grey Yarn Issue for Knitting') C
+   WHERE     TO_DATE (MMT.TRANSACTION_DATE, 'DD/MM/RRRR hh12:mi:ssAM') BETWEEN TO_DATE (
+                                                                                  :P_STARTDATE,
+                                                                                  'DD/MM/RRRR hh12:mi:ssAM')
+                                                                           AND TO_DATE (
+                                                                                  :P_ENDDATE,
+                                                                                  'DD/MM/RRRR hh12:mi:ssAM')
+         AND MTT.TRANSACTION_TYPE_ID = MMT.TRANSACTION_TYPE_ID
+         --  AND MMT.SUBINVENTORY_CODE LIKE 'YR%'
+         -- AND MMT.PRIMARY_QUANTITY < 0
+         AND MMT.INVENTORY_ITEM_ID = MSIB.INVENTORY_ITEM_ID
+         AND MMT.ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+         AND MSIB.ORGANIZATION_ID = MIC.ORGANIZATION_ID
+         AND MSIB.INVENTORY_ITEM_ID = MIC.INVENTORY_ITEM_ID
+         AND MLT.ORGANIZATION_ID = MLN.ORGANIZATION_ID(+)
+         AND MLT.INVENTORY_ITEM_ID = MLN.INVENTORY_ITEM_ID(+)
+         AND MLT.LOT_NUMBER = MLN.LOT_NUMBER(+)
+         AND MMT.ORGANIZATION_ID = OOD.ORGANIZATION_ID
+         AND MMT.TRANSACTION_ID = MLT.TRANSACTION_ID(+)
+         AND MIC.SEGMENT2 = 'RAW MATERIAL'
+         AND MIC.SEGMENT3 = 'YARN'
+         AND MIC.CATEGORY_SET_ID = 1
+         AND MTT.TRANSACTION_TYPE_ID IN (31, 41)
+         AND MMT.TRANSACTION_ID = C.TRANSACTION_ID(+)
+         --AND MMT.ORGANIZATION_ID <> 206
+         AND MMT.SUBINVENTORY_CODE NOT LIKE 'DYR ST%'
+GROUP BY OOD.ORGANIZATION_CODE,
+         OOD.ORGANIZATION_NAME,
+         MMT.SUBINVENTORY_CODE,
+         MMT.TRANSACTION_UOM,
+         MMT.TRANSACTION_DATE,
+         MMT.SOURCE_CODE,
+         MTT.TRANSACTION_TYPE_NAME,
+         MSIB.SEGMENT1,
+         MSIB.DESCRIPTION,
+         MLN.ATTRIBUTE1,
+         MLN.LOT_NUMBER,
+         C.CUSTOMER_NAME

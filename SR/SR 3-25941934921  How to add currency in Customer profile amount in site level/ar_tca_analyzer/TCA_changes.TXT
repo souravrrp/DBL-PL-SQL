@@ -1,0 +1,5 @@
+Here are the analyzer changes in the last 6 months:
+
+29-APR-2021: Signature Accounts Receivable (AR) Invalid PL/SQL Packages: version changed from 19 to 19
+05-APR-2021: New section added: "Lifetime Support Policy" 
+11-JAN-2021: Signature "CREATED_BY_MODULE is Null" added into section "Data Integrity"

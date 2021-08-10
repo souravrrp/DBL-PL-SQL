@@ -1,0 +1,12 @@
+sqlplus user/pass@local_SID
+sqlplus APPSRO/roapps321@PROD
+
+ sqlplus user/pass@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=hostname.network)(Port=1521))(CONNECT_DATA=(SID=remote_SID)))
+
+Maybe, and this might be dependant on the command line environment you're using, you need to quote the string, something like
+
+ sqlplus "user/pass@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=hostname.network)(Port=1521))(CONNECT_DATA=(SID=remote_SID)))"
+
+or
+
+ sqlplus 'user/pass@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=hostname.network)(Port=1521))(
