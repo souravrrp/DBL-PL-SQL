@@ -157,7 +157,7 @@ ORDER BY actual_start_date DESC;
 SELECT *
   FROM APPS.XXDBL_INV_ITEM_CST_RPT_MV
  WHERE 1 = 1 
- AND PERIOD_DESC = 'FEB-21'
+ AND PERIOD_DESC = 'JUL-21'
              --AND ORGANIZATION_ID = 195
 
  --------------------------------------------------------------------------
