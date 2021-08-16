@@ -15,7 +15,7 @@ SELECT ic.item_code,
        ic.period_desc,
        ic.cost_cmpntcls_desc,
        ic.item_cost
-  FROM apps.xxdbl_inv_item_cst_rpt_mv ic, org_organization_definitions odd
+  FROM apps.xxdbl_inv_item_cst_rpt_mv# ic, org_organization_definitions odd
  WHERE     1 = 1
        AND ic.organization_id = odd.organization_id
        AND ic.period_desc = :p_period_name

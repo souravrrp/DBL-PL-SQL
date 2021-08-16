@@ -1,4 +1,3 @@
-/* Formatted on 8/9/2021 9:51:26 AM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY APPS.XXDBL_ITEM_UPLOAD_WEBADI_PKG
 IS
    -- CREATED BY : SOURAV PAUL
@@ -888,8 +887,7 @@ IS
          END;
 
          CASE
-            WHEN     SUBSTR (ln_cur_stg.segment1, 0, 5) != 'YRNDY'
-                 AND SUBSTR (ln_cur_stg.segment1, 0, 3) = 'YRN'     --For Yarn
+            WHEN SUBSTR (ln_cur_stg.segment1, 0, 5) != 'YRNDY'      --For Yarn
             THEN
                ---spining
                BEGIN
@@ -979,8 +977,7 @@ IS
                                      vlp_category_id);
 
                item_catalog_update (ln_cur_stg.segment1);
-            WHEN SUBSTR (ln_cur_stg.segment1, 0, 5) = 'YRNDY'  --For Dyed Yarn
-            THEN
+            ELSE                                               --For Dyed Yarn
                ---rmg
                BEGIN
                   FOR ln_cur_rmg IN cur_rmg
