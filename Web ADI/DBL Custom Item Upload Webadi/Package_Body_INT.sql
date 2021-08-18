@@ -1,4 +1,4 @@
-/* Formatted on 8/17/2021 12:54:21 PM (QP5 v5.287) */
+/* Formatted on 8/18/2021 9:56:23 AM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
    -- CREATED BY : SOURAV PAUL
@@ -67,18 +67,6 @@ IS
             END LOOP;
          END;
 
-
-
-         /*
-         BEGIN
-            item_assign_uom_conv (ln_cur_stg.item_code);
-         END;
-         */
-
-
-
-         --UPDATE XXDBL.xxdbl_item_master_conv SET status = 'Y' WHERE status IS NULL AND item_code = ln_cur_stg.item_code;
-
          COMMIT;
       END LOOP;
 
@@ -124,7 +112,7 @@ IS
       P_ORGANIZATION_ID           NUMBER)
    IS
       len_item_code     NUMBER;
-
+      l_existing_orgh   NUMBER;
       l_category_id     NUMBER;
       --------------------------------------------------------------------------
 
@@ -134,6 +122,7 @@ IS
       ----------------------------------------
       ----Validate Existing Items code--------
       ----------------------------------------
+      /*
       BEGIN
          SELECT LENGTH (TRIM (p_item_code))
            INTO len_item_code
@@ -165,6 +154,77 @@ IS
                || ','
                || 'Item Code already exists in the staging table.';
             l_error_code := 'E';
+      END;
+      */
+
+
+
+      BEGIN
+         SELECT COUNT (*)
+           INTO l_existing_orgh
+           FROM xxdbl.xxdbl_item_master_conv imc
+          WHERE     1 = 1
+                AND imc.item_code = p_item_code
+                AND imc.org_hierarchy = p_org_hierarchy;
+
+         IF ( (l_existing_orgh IS NOT NULL) OR (l_existing_orgh <> 0))
+         THEN
+            BEGIN
+               SELECT LENGTH (TRIM (p_item_code))
+                 INTO len_item_code
+                 FROM DUAL;
+
+               IF len_item_code > 20
+               THEN
+                  l_error_message :=
+                        l_error_message
+                     || ','
+                     || 'Please ensure the length of item code is more than twenty(20) characters';
+                  l_error_code := 'E';
+               END IF;
+            EXCEPTION
+               WHEN NO_DATA_FOUND
+               THEN
+                  l_error_message :=
+                        l_error_message
+                     || ','
+                     || 'Item Code already exists in the staging table.';
+                  l_error_code := 'E';
+            END;
+         ELSE
+            BEGIN
+               SELECT LENGTH (TRIM (p_item_code))
+                 INTO len_item_code
+                 FROM DUAL
+                WHERE     NOT EXISTS
+                             (SELECT 1
+                                FROM xxdbl.xxdbl_item_master_conv imc
+                               WHERE     imc.item_code = p_item_code
+                                     AND imc.status IS NULL)
+                      AND NOT EXISTS
+                             (SELECT 1
+                                FROM mtl_system_items_b msi
+                               WHERE     msi.segment1 = p_item_code
+                                     AND msi.organization_id = 138);
+
+               IF len_item_code > 20
+               THEN
+                  l_error_message :=
+                        l_error_message
+                     || ','
+                     || 'Please ensure the length of item code is more than twenty(20) characters';
+                  l_error_code := 'E';
+               END IF;
+            EXCEPTION
+               WHEN NO_DATA_FOUND
+               THEN
+                  l_error_message :=
+                        l_error_message
+                     || ','
+                     || 'Item Code already exists in the staging table.';
+                  l_error_code := 'E';
+            END;
+         END IF;
       END;
 
 
@@ -615,323 +675,6 @@ IS
          END LOOP;
       END IF;
    END item_assign_template;
-
-   PROCEDURE assign_item_category (VL_ITEM_CODE          VARCHAR2,
-                                   vl_organization_id    NUMBER,
-                                   vlu_category_id       NUMBER)
-   IS
-      v_return_status       VARCHAR2 (1) := NULL;
-      v_msg_count           NUMBER := 0;
-      v_msg_data            VARCHAR2 (2000);
-      v_errorcode           VARCHAR2 (1000);
-      v_category_id         NUMBER;
-      v_old_category_id     NUMBER;
-      v_category_set_id     NUMBER;
-      v_inventory_item_id   NUMBER;
-      vl_ITEM_ID            NUMBER;
-      v_organization_id     NUMBER := vl_organization_id;
-      v_context             VARCHAR2 (2);
-
-
-
-      FUNCTION set_context (i_user_name   IN VARCHAR2,
-                            i_resp_name   IN VARCHAR2,
-                            i_org_id      IN NUMBER)
-         RETURN VARCHAR2
-      IS
-         vi_category_id   NUMBER := vlu_category_id;
-         v_user_id        NUMBER;
-         v_resp_id        NUMBER;
-         v_resp_appl_id   NUMBER;
-         v_lang           VARCHAR2 (100);
-         v_session_lang   VARCHAR2 (100) := fnd_global.current_language;
-         v_return         VARCHAR2 (10) := 'T';
-         v_nls_lang       VARCHAR2 (100);
-         v_org_id         NUMBER := i_org_id;
-
-         CURSOR cur_user
-         IS
-            SELECT user_id
-              FROM fnd_user
-             WHERE user_name = i_user_name;
-
-         CURSOR cur_resp
-         IS
-            SELECT responsibility_id, application_id, language
-              FROM fnd_responsibility_tl
-             WHERE responsibility_name = i_resp_name;
-
-         CURSOR cur_lang (p_lang_code VARCHAR2)
-         IS
-            SELECT nls_language
-              FROM fnd_languages
-             WHERE language_code = p_lang_code;
-      BEGIN
-         SELECT MSI.INVENTORY_ITEM_ID
-           INTO vl_ITEM_ID
-           FROM APPS.MTL_SYSTEM_ITEMS_B MSI
-          WHERE MSI.SEGMENT1 = VL_ITEM_CODE AND MSI.ORGANIZATION_ID = 138;
-
-         INSERT INTO MTL_ITEM_CATEGORIES_INTERFACE (INVENTORY_ITEM_ID,
-                                                    CATEGORY_SET_ID,
-                                                    OLD_CATEGORY_ID,
-                                                    CATEGORY_ID,
-                                                    PROCESS_FLAG,
-                                                    ORGANIZATION_ID,
-                                                    SET_PROCESS_ID,
-                                                    TRANSACTION_TYPE)
-              VALUES (vl_ITEM_ID,
-                      1,
-                      2124,
-                      vi_category_id,
-                      1,
-                      v_organization_id,
-                      1,
-                      'UPDATE');
-
-         COMMIT;
-
-         OPEN cur_user;
-
-         FETCH cur_user INTO v_user_id;
-
-         IF cur_user%NOTFOUND
-         THEN
-            v_return := 'F';
-         END IF;
-
-         CLOSE cur_user;
-
-         OPEN cur_resp;
-
-         FETCH cur_resp INTO v_resp_id, v_resp_appl_id, v_lang;
-
-         IF cur_resp%NOTFOUND
-         THEN
-            v_return := 'F';
-         END IF;
-
-         CLOSE cur_resp;
-
-         fnd_global.apps_initialize (user_id        => v_user_id,
-                                     resp_id        => v_resp_id,
-                                     resp_appl_id   => v_resp_appl_id);
-
-         mo_global.set_policy_context ('S', v_org_id);
-
-         IF v_session_lang != v_lang
-         THEN
-            OPEN cur_lang (v_lang);
-
-            FETCH cur_lang INTO v_nls_lang;
-
-            CLOSE cur_lang;
-
-            fnd_global.set_nls_context (v_nls_lang);
-         END IF;
-
-         RETURN v_return;
-      EXCEPTION
-         WHEN OTHERS
-         THEN
-            RETURN 'F';
-      END set_context;
-   BEGIN
-      v_context := set_context ('SYSADMIN', 'Inventory', 131);
-
-      IF v_context = 'F'
-      THEN
-         DBMS_OUTPUT.put_line ('Error while setting the context');
-      END IF;
-
-      SELECT MSI.INVENTORY_ITEM_ID
-        INTO vl_ITEM_ID
-        FROM APPS.MTL_SYSTEM_ITEMS_B MSI
-       WHERE MSI.SEGMENT1 = VL_ITEM_CODE AND MSI.ORGANIZATION_ID = 138;
-
-      --- context done ------------
-      v_old_category_id := 2124;
-      v_category_id := vlu_category_id;
-      v_category_set_id := 1;
-      v_inventory_item_id := vl_ITEM_ID;
-      v_organization_id := v_organization_id;
-
-      INV_ITEM_CATEGORY_PUB.UPDATE_CATEGORY_ASSIGNMENT (
-         p_api_version         => 1.0,
-         p_init_msg_list       => FND_API.G_TRUE,
-         p_commit              => FND_API.G_FALSE,
-         x_return_status       => v_return_status,
-         x_errorcode           => v_errorcode,
-         x_msg_count           => v_msg_count,
-         x_msg_data            => v_msg_data,
-         p_old_category_id     => v_old_category_id,
-         p_category_id         => v_category_id,
-         p_category_set_id     => v_category_set_id,
-         p_inventory_item_id   => v_inventory_item_id,
-         p_organization_id     => v_organization_id);
-      COMMIT;
-
-      IF v_return_status = fnd_api.g_ret_sts_success
-      THEN
-         COMMIT;
-         DBMS_OUTPUT.put_line (
-               'Updation of category assigment is Sucessfull : '
-            || v_category_id);
-      ELSE
-         DBMS_OUTPUT.put_line (
-            'Updation of category assigment failed:' || v_msg_data);
-         ROLLBACK;
-
-         FOR i IN 1 .. v_msg_count
-         LOOP
-            v_msg_data := oe_msg_pub.get (p_msg_index => i, p_encoded => 'F');
-            DBMS_OUTPUT.put_line (i || ') ' || v_msg_data);
-         END LOOP;
-      END IF;
-   END assign_item_category;
-
-   PROCEDURE item_assign_uom_conv (um_item_code IN VARCHAR2)
-   IS
-      p_from_uom_code        VARCHAR2 (200);
-      p_to_uom_code          VARCHAR2 (200);
-      p_item_id              NUMBER;
-      p_uom_rate             NUMBER;
-      x_return_status        VARCHAR2 (200);
-      l_msg_data             VARCHAR2 (2000);
-      v_context              VARCHAR2 (100);
-      um_Inventory_Item_Id   NUMBER;
-
-
-      FUNCTION set_context (i_user_name   IN VARCHAR2,
-                            i_resp_name   IN VARCHAR2,
-                            i_org_id      IN NUMBER)
-         RETURN VARCHAR2
-      IS
-         v_user_id        NUMBER;
-         v_resp_id        NUMBER;
-         v_resp_appl_id   NUMBER;
-         v_lang           VARCHAR2 (100);
-         v_session_lang   VARCHAR2 (100) := fnd_global.current_language;
-         v_return         VARCHAR2 (10) := 'T';
-         v_nls_lang       VARCHAR2 (100);
-         v_org_id         NUMBER := i_org_id;
-
-         CURSOR cur_user
-         IS
-            SELECT user_id
-              FROM fnd_user
-             WHERE user_name = i_user_name;
-
-         CURSOR cur_resp
-         IS
-            SELECT responsibility_id, application_id, language
-              FROM fnd_responsibility_tl
-             WHERE responsibility_name = i_resp_name;
-
-         CURSOR cur_lang (p_lang_code VARCHAR2)
-         IS
-            SELECT nls_language
-              FROM fnd_languages
-             WHERE language_code = p_lang_code;
-      BEGIN
-         OPEN cur_user;
-
-         FETCH cur_user INTO v_user_id;
-
-         IF cur_user%NOTFOUND
-         THEN
-            v_return := 'F';
-         END IF;
-
-         CLOSE cur_user;
-
-         OPEN cur_resp;
-
-         FETCH cur_resp INTO v_resp_id, v_resp_appl_id, v_lang;
-
-         IF cur_resp%NOTFOUND
-         THEN
-            v_return := 'F';
-         END IF;
-
-         CLOSE cur_resp;
-
-         fnd_global.apps_initialize (user_id        => v_user_id,
-                                     resp_id        => v_resp_id,
-                                     resp_appl_id   => v_resp_appl_id);
-
-         mo_global.set_policy_context ('S', v_org_id);
-
-         IF v_session_lang != v_lang
-         THEN
-            OPEN cur_lang (v_lang);
-
-            FETCH cur_lang INTO v_nls_lang;
-
-            CLOSE cur_lang;
-
-            fnd_global.set_nls_context (v_nls_lang);
-         END IF;
-
-         RETURN v_return;
-      EXCEPTION
-         WHEN OTHERS
-         THEN
-            RETURN 'F';
-      END set_context;
-   BEGIN
-      BEGIN
-         v_context := set_context ('SYSADMIN', 'Inventory', 131);
-
-         IF v_context = 'F'
-         THEN
-            DBMS_OUTPUT.PUT_LINE (
-               'Error while setting the context' || SQLERRM (SQLCODE));
-         END IF;
-      END;
-
-      SELECT inventory_item_id
-        INTO um_Inventory_Item_Id
-        FROM mtl_system_items_b
-       WHERE segment1 = um_item_code AND organization_id = 138;
-
-      p_from_uom_code := 'KG';
-      p_to_uom_code := 'NO';
-      p_item_id := um_Inventory_Item_Id;
-      p_uom_rate := '50';
-
-      INV_CONVERT.CREATE_UOM_CONVERSION (P_FROM_UOM_CODE   => p_from_uom_code,
-                                         P_TO_UOM_CODE     => p_to_uom_code,
-                                         P_ITEM_ID         => p_item_id,
-                                         P_UOM_RATE        => p_uom_rate,
-                                         X_RETURN_STATUS   => x_return_status);
-
-      COMMIT;
-
-      IF x_return_status = 'S'
-      THEN
-         DBMS_OUTPUT.put_line (' Conversion Got Created Sucessfully ');
-      ELSIF x_return_status = 'W'
-      THEN
-         DBMS_OUTPUT.put_line (' Conversion Already Exists ');
-      ELSIF x_return_status = 'U'
-      THEN
-         DBMS_OUTPUT.put_line (' Unexpected Error Occured ');
-      ELSIF x_return_status = 'E'
-      THEN
-         LOOP
-            l_msg_data :=
-               FND_MSG_PUB.Get (FND_MSG_PUB.G_NEXT, FND_API.G_FALSE);
-
-            IF l_msg_data IS NULL
-            THEN
-               EXIT;
-            END IF;
-
-            DBMS_OUTPUT.PUT_LINE ('Message' || l_msg_data);
-         END LOOP;
-      END IF;
-   END item_assign_uom_conv;
 
    PROCEDURE create_lcm_item_category (LCM_ITEM_CODE          VARCHAR2,
                                        Lcm_organization_id    NUMBER)

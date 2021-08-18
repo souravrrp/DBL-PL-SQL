@@ -4,15 +4,40 @@
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
  WHERE 1 = 1
+ AND ITEM_CODE='SPRECONS000000084732'
 --Order by desc
 ;
 
-SELECT set_process_id
+SELECT msii.SET_PROCESS_ID,msii.*
   FROM inv.mtl_system_items_interface msii
  WHERE     1 = 1
        --AND set_process_id = 1000
        AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
 --AND EXISTS (SELECT 1 FROM XXDBL.xxdbl_item_master_conv xxdbl WHERE xxdbl.item_code = msii.segment1)
+
+SELECT
+*
+FROM
+MTL_SYSTEM_ITEMS_B
+WHERE 1=1
+AND  SEGMENT1='SPRECONS000000084732';
+
+SELECT *
+  FROM XXDBL.xxdbl_item_master_conv xxdbl
+ WHERE     1 = 1
+       AND xxdbl.status = 'I'
+       AND xxdbl.organization_code = 'IMO'
+       AND EXISTS
+              (SELECT 1
+                 FROM mtl_system_items_b msi
+                WHERE     xxdbl.item_code = msi.segment1
+                      AND msi.organization_id = 138
+                      AND TRUNC (msi.creation_date) = TRUNC (SYSDATE))
+--       AND EXISTS
+--              (SELECT 1
+--                 FROM inv.mtl_system_items_interface msii
+--                WHERE     xxdbl.item_code = msii.segment1
+--                      AND TRUNC (msii.creation_date) = TRUNC (SYSDATE))
 ;
 
 --------------------------------------------------------------------------------
@@ -84,3 +109,10 @@ SELECT category_id                                                      --INTO
        AND UPPER (mc.segment2) = UPPER ( :P_ITEM_CATEGORY_SEGMENT2)
        AND UPPER (mc.segment3) = UPPER ( :P_ITEM_CATEGORY_SEGMENT3)
        AND UPPER (mc.segment4) = UPPER ( :P_ITEM_CATEGORY_SEGMENT4);
+       
+--------------------------------------------------------------------------------
+
+ALTER TABLE xxdbl.xxdbl_item_master_conv
+   ADD (CATEGORY_ID NUMBER);
+   
+ALTER TABLE xxdbl.xxdbl_item_master_conv DROP COLUMN CATEGORY_ID;
