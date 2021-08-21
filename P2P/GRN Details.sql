@@ -47,14 +47,14 @@ SELECT rt.transaction_id,
        AND rt.organization_id = ood.organization_id
        AND ood.operating_unit = hou.organization_id
        --AND rt.transaction_type = 'RECEIVE'
-       AND ( :p_grn_no IS NULL OR (rsh.receipt_num = :p_grn_no))
+       AND (   :p_grn_no IS NULL OR (rsh.receipt_num = :p_grn_no))
        AND (   :p_operating_unit IS NULL OR (ood.operating_unit = :p_operating_unit))
-       AND ( :p_ou_name IS NULL OR (hou.name = :p_ou_name))
+       AND (   :p_ou_name IS NULL OR (hou.name = :p_ou_name))
        AND (   :p_organization_code IS NULL OR (ood.organization_code = :p_organization_code))
        AND (   :p_org_name IS NULL OR (UPPER (ood.organization_name) LIKE UPPER ('%' || :p_org_name || '%')))
        AND (   :p_legal_entity_name IS NULL OR (UPPER (led.legal_entity_name) LIKE UPPER ('%' || :p_legal_entity_name || '%')))
        AND (   :p_legal_entity IS NULL OR (hou.default_legal_context_id = :p_legal_entity))
-       AND ( :p_ledger_id IS NULL OR (ood.set_of_books_id = :p_ledger_id))
+       AND (   :p_ledger_id IS NULL OR (ood.set_of_books_id = :p_ledger_id))
        AND (   :p_organization_id IS NULL OR (ood.organization_id = :p_organization_id))
        AND EXISTS
                (SELECT 1
