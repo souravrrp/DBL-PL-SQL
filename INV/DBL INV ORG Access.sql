@@ -1,5 +1,5 @@
 /* Formatted on 2/2/2021 9:39:28 AM (QP5 v5.287) */
-SELECT application_name,
+SELECT oa.application_name,
        oa.responsibility_name,
        oa.organization_code,
        oa.organization_name,
