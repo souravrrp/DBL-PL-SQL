@@ -1,83 +1,14 @@
-/* Formatted on 8/23/2021 12:08:55 PM (QP5 v5.354) */
+/* Formatted on 8/24/2021 10:49:14 AM (QP5 v5.354) */
   SELECT                                                            --DISTINCT
          PHA.PO_HEADER_ID,
-         PHA.SEGMENT1
-             PO_NUM,
+         PHA.SEGMENT1             PO_NUM,
          PLA.LINE_NUM,
-         PHA.REVISION_NUM,
-         PHAA.REVISION_NUM
-             ARCH_REVISION_NUM,
-         PHA.REVISED_DATE,
+         PHA.TYPE_LOOKUP_CODE     PO_TYPE,
+         PLA.ITEM_DESCRIPTION,
          PHA.CREATION_DATE,
-         PHA.TYPE_LOOKUP_CODE
-             PO_TYPE,
-         DECODE (PLAL.AMOUNT, PLA.AMOUNT, NULL, PLAL.AMOUNT)
-             FROM_UNIT_PRICE,
-         DECODE (PLA.AMOUNT, PLAL.AMOUNT, NULL, PLA.AMOUNT)
-             TO_UNIT_PRICE,
-         DECODE (PLAL.RETAINAGE_RATE,
-                 PLA.RETAINAGE_RATE, NULL,
-                 PLAL.RETAINAGE_RATE)
-             FROM_RETAINAGE_RATE,
-         DECODE (PLA.RETAINAGE_RATE,
-                 PLAL.RETAINAGE_RATE, NULL,
-                 PLA.RETAINAGE_RATE)
-             TO_RETAINAGE_RATE,
-         DECODE (PLAL.RECOUPMENT_RATE,
-                 PLA.RECOUPMENT_RATE, NULL,
-                 PLAL.RECOUPMENT_RATE)
-             FROM_RECOUPMENT_RATE,
-         DECODE (PLA.RECOUPMENT_RATE,
-                 PLAL.RECOUPMENT_RATE, NULL,
-                 PLA.RECOUPMENT_RATE)
-             TO_RECOUPMENT_RATE,
-         DECODE (PLLAL.NEED_BY_DATE,
-                 PLL.NEED_BY_DATE, NULL,
-                 PLLAL.NEED_BY_DATE)
-             FROM_NEED_BY_DATE,
-         DECODE (PLL.NEED_BY_DATE, PLLAL.NEED_BY_DATE, NULL, PLL.NEED_BY_DATE)
-             TO_NEED_BY_DATE,
-         DECODE ((SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ARCHIVE_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID),
-                 (SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID), NULL,
-                 (SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ARCHIVE_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID))
-             TOTAL_AMOUNT_CHANGED_FROM,
-         DECODE ((SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID),
-                 (SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ARCHIVE_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID), NULL,
-                 (SELECT SUM (AMOUNT)
-                    FROM PO_LINES_ALL
-                   WHERE PO_HEADER_ID = PHA.PO_HEADER_ID))
-             TOTAL_AMOUNT_CHANGED_TO,
-         DECODE ((SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDA.CODE_COMBINATION_ID),
-                 (SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDAA.CODE_COMBINATION_ID), NULL,
-                 (SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDA.CODE_COMBINATION_ID))
-             FROM_CHARGE_ACCOUNT,
-         DECODE ((SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDAA.CODE_COMBINATION_ID),
-                 (SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDA.CODE_COMBINATION_ID), NULL,
-                 (SELECT CONCATENATED_SEGMENTS
-                    FROM GL_CODE_COMBINATIONS_KFV
-                   WHERE CODE_COMBINATION_ID = PDAA.CODE_COMBINATION_ID))
-             TO_CHARGE_ACCOUNT,
-         PLA.ITEM_DESCRIPTION
+         PHA.REVISION_NUM,
+         PHAA.REVISION_NUM        ARCH_REVISION_NUM,
+         PHA.REVISED_DATE
     --,PHA.*
     --,PLA.*
     --,PLL.*

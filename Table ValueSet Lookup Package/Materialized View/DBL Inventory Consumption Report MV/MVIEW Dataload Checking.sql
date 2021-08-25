@@ -5,7 +5,8 @@ SELECT *
        --AND TO_CHAR (TRANSACTION_DATE, 'DD-MON-YY') = '01-FEB-21'
        --AND TO_CHAR (TRANSACTION_DATE, 'MON-YY') = 'FEB-21'
        AND ASSET IS NOT NULL
-       --AND ORGANIZATION_ID = 195;
+       --AND ORGANIZATION_ID = 195
+       ;
 
 SELECT * FROM inv.mtl_material_transactions;
 
