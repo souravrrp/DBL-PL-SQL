@@ -1,7 +1,7 @@
 /* Formatted on 8/25/2021 10:26:47 AM (QP5 v5.287) */
-SELECT 'Request id: ' || request_id,
-       'Trace id: ' || oracle_Process_id,
-       'Trace Flag: ' || req.enable_trace,
+SELECT 'Request id: ' || request_id request_id,
+       'Trace id: ' || oracle_Process_id oracle_Process_id,
+       'Trace Flag: ' || req.enable_trace Trace_Flag,
           'Trace Name:
 '
        || dest.VALUE
@@ -9,17 +9,17 @@ SELECT 'Request id: ' || request_id,
        || LOWER (dbnm.VALUE)
        || '_ora_'
        || oracle_process_id
-       || '.trc',
-       'Prog. Name: ' || prog.user_concurrent_program_name,
+       || '.trc' trace_file_name,
+       'Prog. Name: ' || prog.user_concurrent_program_name concurrent_program_name,
           'File Name: '
        || execname.execution_file_name
-       || execname.subroutine_name,
+       || execname.subroutine_name execution_name,
           'Status : '
        || DECODE (phase_code, 'R', 'Running')
        || '-'
-       || DECODE (status_code, 'R', 'Normal'),
-       'SID Serial: ' || ses.sid || ',' || ses.serial#,
-       'Module : ' || ses.module
+       || DECODE (status_code, 'R', 'Normal')  concurrent_program_status,
+       'SID Serial: ' || ses.sid || ',' || ses.serial# concurrent_sid_serial,
+       'Module : ' || ses.module module_name
   FROM fnd_concurrent_requests req,
        v$session ses,
        v$process proc,
