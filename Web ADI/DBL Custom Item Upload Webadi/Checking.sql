@@ -4,23 +4,37 @@
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
  WHERE 1 = 1
- AND ITEM_CODE='SPRECONS000000084732'
+ AND ITEM_CODE in ( 'SPRECONS000000085466','SPRECONS000000085467');
 --Order by desc
 ;
+
+SELECT pw.ROWID rx, pw.*
+        FROM xxdbl.xxdbl_item_master_conv pw
+       WHERE 1 = 1 AND NVL (pw.status, 'X') NOT IN ('I', 'S', 'D')
+             AND pw.item_code LIKE 'FASSET00000000003268%'
+             AND pw.organization_code = 'IMO'
+             AND NOT EXISTS
+                   (SELECT 1
+                      FROM mtl_system_items_b msb, mtl_parameters mp
+                     WHERE     msb.organization_id = mp.organization_id
+                           AND msb.segment1 = pw.item_code
+                           AND mp.organization_code = pw.organization_code);
 
 SELECT msii.SET_PROCESS_ID,msii.*
   FROM inv.mtl_system_items_interface msii
  WHERE     1 = 1
        --AND set_process_id = 1000
-       AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
+       AND segment1='SPRECONS000000085466'
+       --AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
 --AND EXISTS (SELECT 1 FROM XXDBL.xxdbl_item_master_conv xxdbl WHERE xxdbl.item_code = msii.segment1)
+;
 
 SELECT
 *
 FROM
 MTL_SYSTEM_ITEMS_B
 WHERE 1=1
-AND  SEGMENT1='SPRECONS000000084732';
+AND  SEGMENT1='SPRECONS000000085466';
 
 SELECT *
   FROM XXDBL.xxdbl_item_master_conv xxdbl

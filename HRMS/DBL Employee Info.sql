@@ -13,6 +13,7 @@ select --DISTINCT
        hla.description job_location
        ,papf.current_emp_or_apl_flag
        ,paaf.primary_flag
+       ,DECODE(fu.end_date,NULL,'Active','Inactive') user_status
        ,hla.description||DECODE(hla.address_line_1,NULL,'',',')||hla.address_line_1||DECODE(hla.address_line_2,NULL,'',',')||hla.address_line_2||DECODE(hla.address_line_3,NULL,'',',')||hla.address_line_3||','||hla.town_or_city location_details
        ,papf.email_address
        --,apps.PER_Mobile_Utils.get_concat_phone_numbers ( p_in_person_id    => papf.person_id, p_in_phone_type   => 'MPL') mobile_phone

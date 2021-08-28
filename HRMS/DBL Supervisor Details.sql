@@ -12,7 +12,10 @@ SELECT                                                              --DISTINCT
        paaf.primary_flag,
        sup.superv_person_id,
        sup.superv_empno,
-       sup.supervisor_name
+       sup.supervisor_name,
+       sup.current_emp_or_apl_flag,
+       sup.primary_flag,
+       DECODE(fu.end_date,NULL,'Active','Inactive') sup_user_status
   --,PAAF.*
   --,PAPF.*
   --,PJ.*
@@ -27,7 +30,9 @@ SELECT                                                              --DISTINCT
        fnd_user                        fu,
        (SELECT papfs.person_id                                  superv_person_id,
                NVL (papfs.employee_number, papfs.npw_number)    superv_empno,
-               (   papfs.first_name || ' ' || papfs.middle_names || ' ' || papfs.last_name) AS supervisor_name
+               (   papfs.first_name || ' ' || papfs.middle_names || ' ' || papfs.last_name) AS supervisor_name,
+               papfs.current_emp_or_apl_flag,
+               paafs.primary_flag
           FROM hr.per_all_assignments_f paafs, hr.per_all_people_f papfs
          WHERE     papfs.person_id = paafs.person_id(+)
                AND TRUNC (SYSDATE) BETWEEN TRUNC (paafs.effective_start_date) AND TRUNC (paafs.effective_end_date)
@@ -44,7 +49,9 @@ SELECT                                                              --DISTINCT
        AND (   ( :p_department IS NULL) OR (UPPER (haou.name) LIKE UPPER ('%' || :p_department || '%')))
        AND TRUNC (SYSDATE) BETWEEN TRUNC (paaf.effective_start_date) AND TRUNC (paaf.effective_end_date)
        AND TRUNC (SYSDATE) BETWEEN TRUNC (papf.effective_start_date) AND TRUNC (papf.effective_end_date)
-       AND NVL (papf.employee_number, papf.npw_number) = fu.user_name(+)
+       --AND NVL (papf.employee_number, papf.npw_number) = fu.user_name(+)
+       --and papf.person_id = fu.employee_id(+)
+       and sup.superv_person_id = fu.employee_id(+)
        --AND papf.person_id = NVL ( :p_person_id, papf.person_id)
        --AND NVL(papf.employee_number,papf.npw_number) IN ('')
        --AND NVL(papfs.employee_number,papfs.npw_number) IN ('101347')
