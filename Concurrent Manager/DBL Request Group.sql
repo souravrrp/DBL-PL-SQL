@@ -10,6 +10,7 @@ SELECT cpt.user_concurrent_program_name     "Concurrent Program Name",
        fa.application_short_name            "Application Short Name",
        fa.basepath                          "Basepath"
        --,rgu.*
+       --,cp.*
   FROM fnd_request_groups          rg,
        fnd_request_group_units     rgu,
        fnd_concurrent_programs     cp,
@@ -32,7 +33,8 @@ SELECT cpt.user_concurrent_program_name     "Concurrent Program Name",
    AND ((:P_REQUEST_GROUP_NAME IS NULL) OR (UPPER (rg.request_group_name) = UPPER (:P_REQUEST_GROUP_NAME)))
    --AND cpt.user_concurrent_program_name in ('DBL AR Invoice Details')
    --AND ((:P_CONCURRENT_PROGRAM_NAME IS NULL) OR (UPPER (cpt.user_concurrent_program_name) = UPPER (:P_CONCURRENT_PROGRAM_NAME)))
-   AND ((:P_CONCURRENT_PROGRAM_NAME IS NULL) OR (UPPER(cpt.user_concurrent_program_name) LIKE UPPER('%'||:P_CONCURRENT_PROGRAM_NAME||'%')));
+   AND ((:P_CONCURRENT_PROGRAM_NAME IS NULL) OR (UPPER(cpt.user_concurrent_program_name) LIKE UPPER('%'||:P_CONCURRENT_PROGRAM_NAME||'%')))
+   AND cp.enabled_flag='Y';
    
 
 --------------------------------------------------------------------------------
