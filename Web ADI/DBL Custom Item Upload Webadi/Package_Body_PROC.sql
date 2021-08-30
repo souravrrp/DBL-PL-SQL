@@ -1,9 +1,9 @@
-/* Formatted on 8/18/2021 2:38:51 PM (QP5 v5.287) */
+/* Formatted on 8/29/2021 5:53:55 PM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
    -- CREATED BY : SOURAV PAUL
    -- CREATION DATE : 10-AUG-2020
-   -- LAST UPDATE DATE :16-AUG-2020
+   -- LAST UPDATE DATE :18-AUG-2020
    -- PURPOSE : CUSTOM ITEM UPLOAD INTO STAGING TABLE
    FUNCTION check_error_log_to_assign_data
       RETURN NUMBER
@@ -122,43 +122,6 @@ IS
       ----------------------------------------
       ----Validate Existing Items code--------
       ----------------------------------------
-      /*
-      BEGIN
-         SELECT LENGTH (TRIM (p_item_code))
-           INTO len_item_code
-           FROM DUAL
-          WHERE     NOT EXISTS
-                       (SELECT 1
-                          FROM xxdbl.xxdbl_item_master_conv imc
-                         WHERE     imc.item_code = p_item_code
-                               AND imc.status IS NULL)
-                AND NOT EXISTS
-                       (SELECT 1
-                          FROM mtl_system_items_b msi
-                         WHERE     msi.segment1 = p_item_code
-                               AND msi.organization_id = 138);
-
-         IF len_item_code > 20
-         THEN
-            l_error_message :=
-                  l_error_message
-               || ','
-               || 'Please ensure the length of item code is more than twenty(20) characters';
-            l_error_code := 'E';
-         END IF;
-      EXCEPTION
-         WHEN NO_DATA_FOUND
-         THEN
-            l_error_message :=
-                  l_error_message
-               || ','
-               || 'Item Code already exists in the staging table.';
-            l_error_code := 'E';
-      END;
-      */
-
-
-
       BEGIN
          SELECT COUNT (*)
            INTO l_existing_orgh
@@ -204,7 +167,9 @@ IS
                       AND NOT EXISTS
                              (SELECT 1
                                 FROM mtl_system_items_b msi
-                               WHERE     msi.segment1 = p_item_code
+                               WHERE     (   msi.segment1 = p_item_code
+                                          OR (UPPER (msi.description) =
+                                                 UPPER (p_item_description)))
                                      AND msi.organization_id = 138);
 
                IF len_item_code > 20
