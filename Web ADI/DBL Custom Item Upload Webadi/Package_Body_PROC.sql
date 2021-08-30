@@ -1,14 +1,13 @@
-/* Formatted on 8/29/2021 5:53:55 PM (QP5 v5.287) */
+/* Formatted on 8/30/2021 4:57:26 PM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
    -- CREATED BY : SOURAV PAUL
    -- CREATION DATE : 10-AUG-2020
-   -- LAST UPDATE DATE :18-AUG-2020
+   -- LAST UPDATE DATE :30-AUG-2020
    -- PURPOSE : CUSTOM ITEM UPLOAD INTO STAGING TABLE
    FUNCTION check_error_log_to_assign_data
       RETURN NUMBER
    IS
-      vlp_category_id     NUMBER;
       vlp_template_name   VARCHAR2 (100);
 
       CURSOR cur_stg
@@ -18,7 +17,6 @@ IS
           WHERE     1 = 1
                 AND xxdbl.status = 'I'
                 AND xxdbl.organization_code = 'IMO'
-                --AND EXISTS (SELECT 1 FROM inv.mtl_system_items_interface msii WHERE xxdbl.item_code = msii.segment1 AND TRUNC (msii.creation_date) = TRUNC (SYSDATE))
                 AND EXISTS
                        (SELECT 1
                           FROM mtl_system_items_b msi
@@ -73,6 +71,26 @@ IS
       RETURN 0;
    END;
 
+   FUNCTION cust_import_data_to_interface (p_item_code VARCHAR2)
+      RETURN NUMBER
+   IS
+      CURSOR cur_intf
+      IS
+         SELECT *
+           FROM xxdbl.xxdbl_item_master_conv pw
+          WHERE     NVL (pw.status, 'X') NOT IN ('I', 'S', 'D')
+                AND pw.item_code = p_item_code;
+   BEGIN
+      FOR ln_cur_intf IN cur_intf
+      LOOP
+         BEGIN
+            APPS.xxdbl_item_conv_prc;
+         END;
+      END LOOP;
+
+      RETURN 0;
+   END cust_import_data_to_interface;
+
    PROCEDURE cust_upload_data_to_staging (
       P_ITEM_CODE                 VARCHAR2,
       P_ITEM_DESCRIPTION          VARCHAR2,
@@ -114,6 +132,8 @@ IS
       len_item_code     NUMBER;
       l_existing_orgh   NUMBER;
       l_category_id     NUMBER;
+
+      l_return_status   NUMBER;
       --------------------------------------------------------------------------
 
       l_error_message   VARCHAR2 (3000);
@@ -309,25 +329,22 @@ IS
                       P_STATUS_MESSAGE,
                       P_TEMPLATE);
 
+         COMMIT;
+
          ----------------------------------------------------------------------------------------------------
          -----------Insert data into MTL_SYSTEM_ITEMS_INTERFACE after loading into staging table-------------
          ----------------------------------------------------------------------------------------------------
 
          BEGIN
-            APPS.xxdbl_item_conv_prc;
+            --APPS.xxdbl_item_conv_prc;
+            --COMMIT;
+
+            l_return_status := cust_import_data_to_interface (P_ITEM_CODE);
+            COMMIT;
          END;
       END IF;
    END cust_upload_data_to_staging;
 
-
-
-   /*
-   PROCEDURE cust_import_data_to_interface
-   IS
-   BEGIN
-      APPS.xxdbl_item_conv_prc;
-   END cust_import_data_to_interface;
-   */
    PROCEDURE assign_item_org_and_category (ERRBUF    OUT VARCHAR2,
                                            RETCODE   OUT VARCHAR2)
    IS

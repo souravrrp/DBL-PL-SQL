@@ -1,4 +1,4 @@
-/* Formatted on 8/30/2021 9:35:31 AM (QP5 v5.287) */
+/* Formatted on 8/30/2021 4:09:16 PM (QP5 v5.287) */
 --EXECUTE APPS.xxdbl_item_conv_prc();
 
 SELECT *
@@ -41,18 +41,15 @@ SELECT *
  WHERE     1 = 1
        AND xxdbl.status = 'I'
        AND xxdbl.organization_code = 'IMO'
+       --AND EXISTS (SELECT 1 FROM inv.mtl_system_items_interface msii WHERE xxdbl.item_code = msii.segment1 AND TRUNC (msii.creation_date) = TRUNC (SYSDATE))
        AND EXISTS
               (SELECT 1
                  FROM mtl_system_items_b msi
                 WHERE     xxdbl.item_code = msi.segment1
                       AND msi.organization_id = 138
-                      AND TRUNC (msi.creation_date) = TRUNC (SYSDATE))
---       AND EXISTS
---              (SELECT 1
---                 FROM inv.mtl_system_items_interface msii
---                WHERE     xxdbl.item_code = msii.segment1
---                      AND TRUNC (msii.creation_date) = TRUNC (SYSDATE))
-;
+                      AND TRUNC (msi.creation_date) = TRUNC (SYSDATE));
+
+
 --------------------------------------------------------------------------------
 
 INSERT INTO INV.MTL_SYSTEM_ITEMS_INTERFACE (PROCESS_FLAG,
