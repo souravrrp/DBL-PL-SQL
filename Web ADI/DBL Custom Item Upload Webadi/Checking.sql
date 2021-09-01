@@ -4,7 +4,7 @@
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
  WHERE     1 = 1
-       AND ITEM_CODE IN ('SPRECONS000000085466', 'SPRECONS000000085467');
+       AND ITEM_CODE IN ('PUMA-59016305','PUMA-59016310','PUMA-59016315','PUMA-59016320');
 
 --Order by desc
 ;
@@ -122,8 +122,33 @@ SELECT category_id                                                      --INTO
 
 --------------------------------------------------------------------------------
 
-ALTER TABLE xxdbl.xxdbl_item_master_conv
-   ADD (CATEGORY_ID NUMBER);
+--ALTER TABLE xxdbl.xxdbl_item_master_conv ADD (CATEGORY_ID NUMBER);
 
-ALTER TABLE xxdbl.xxdbl_item_master_conv
-   DROP COLUMN CATEGORY_ID;
+--ALTER TABLE xxdbl.xxdbl_item_master_conv DROP COLUMN CATEGORY_ID;
+   
+   
+   /* Formatted on 9/1/2021 10:30:12 AM (QP5 v5.287) */
+SELECT LENGTH (TRIM ( :p_item_code)) --INTO
+                                     len_item_code
+  FROM DUAL
+ WHERE     NOT EXISTS
+              (SELECT 1
+                 FROM xxdbl.xxdbl_item_master_conv imc
+                WHERE imc.item_code = :p_item_code AND imc.status IS NULL)
+       AND NOT EXISTS
+              (SELECT 1
+                 FROM mtl_system_items_b msi
+                WHERE     (   msi.segment1 = :p_item_code
+                           OR (UPPER (msi.description) =
+                                  UPPER ( :p_item_description)))
+                      AND msi.organization_id = 138);
+
+SELECT msi.segment1
+  FROM mtl_system_items_b msi
+ WHERE msi.segment1 = :p_item_code AND msi.organization_id = 138;
+
+
+SELECT msi.segment1
+  FROM mtl_system_items_b msi
+ WHERE     (UPPER (msi.description) = UPPER ( :p_item_description))
+       AND msi.organization_id = 138;

@@ -2,7 +2,7 @@
 SELECT APPS.XXDBL_GET_BR_OPEN_BAL (2095,
                                    131,
                                    2140,
-                                   TO_DATE (TO_CHAR ('01-JAN-2021')),
-                                   TO_DATE (TO_CHAR ('31-MAR-2021')))
+                                   TO_DATE (TO_CHAR ('01-JUN-2021')),
+                                   TO_DATE (TO_CHAR ('30-JUN-2021')))
           open_bal
   FROM DUAL

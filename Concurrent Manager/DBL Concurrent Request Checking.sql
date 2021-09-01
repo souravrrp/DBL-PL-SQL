@@ -42,4 +42,4 @@
          --and trunc(fcrs.actual_completion_date) = trunc(sysdate)
          AND frt.language = 'US'
          AND fcrs.responsibility_id = frt.responsibility_id
-ORDER BY fcrs.actual_start_date DESC;
+ORDER BY fcrs.actual_start_date, fcrs.requestor DESC;
