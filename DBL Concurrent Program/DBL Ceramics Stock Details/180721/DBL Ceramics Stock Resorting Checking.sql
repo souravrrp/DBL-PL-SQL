@@ -41,7 +41,7 @@
          inv.mtl_transaction_types mtt,
          inv.mtl_transaction_lot_numbers mtln,
          gme.gme_batch_header h,
-         fm_form_mst_b fm,
+         apps.fm_form_mst_b fm,
          apps.mtl_system_items_b_kfv msi,
          apps.mtl_item_categories_v mic,
          inv.mtl_lot_numbers mlt

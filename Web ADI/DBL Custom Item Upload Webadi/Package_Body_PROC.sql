@@ -1,4 +1,4 @@
-/* Formatted on 8/30/2021 4:57:26 PM (QP5 v5.287) */
+/* Formatted on 9/1/2021 2:32:07 PM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
    -- CREATED BY : SOURAV PAUL
@@ -143,7 +143,7 @@ IS
       ----Validate Existing Items code--------
       ----------------------------------------
       BEGIN
-         SELECT COUNT (*)
+         SELECT NVL (COUNT (*), 0)
            INTO l_existing_orgh
            FROM xxdbl.xxdbl_item_master_conv imc
           WHERE     1 = 1
