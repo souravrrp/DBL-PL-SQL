@@ -1,4 +1,4 @@
-/* Formatted on 9/2/2021 10:28:09 AM (QP5 v5.287) */
+/* Formatted on 9/2/2021 11:53:56 AM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_item_creation_pkg
 AS
    PROCEDURE writedebug (p_text IN VARCHAR2)
@@ -670,7 +670,8 @@ AS
       SELECT organization_id
         INTO l_master_org_id
         FROM mtl_parameters mp
-       WHERE     master_organization_id = organization_id;
+       WHERE     master_organization_id = organization_id
+             AND organization_id = 138;             --Updated by Sourav 020921
 
       FOR r1 IN cur_item_master
       LOOP

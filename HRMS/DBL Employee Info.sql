@@ -7,16 +7,22 @@ select --DISTINCT
        (papf.first_name || ' ' || papf.middle_names || ' ' || papf.last_name)
           as employee_name,
        substr (pj.name, instr (pj.name, '.') + 1) designation,
-       --apps.designation_from_user_name_id(fu.user_name,null) emp_designation,
        papf.start_date as date_of_joining,
        haou.name department,
        hla.description job_location
-       ,papf.current_emp_or_apl_flag
-       ,paaf.primary_flag
+       ,(CASE WHEN papf.current_emp_or_apl_flag IS NULL AND papf.employee_number IS NULL AND SUBSTR(papf.npw_number,0,3)='CWK' THEN 'CWK'
+              WHEN papf.current_emp_or_apl_flag IS NULL AND papf.employee_number IS NOT NULL THEN 'Inactive'
+              WHEN papf.current_emp_or_apl_flag IS NOT NULL THEN 'Active'
+              ELSE 'Others' 
+         END) Employee_status
        ,DECODE(fu.end_date,NULL,'Active','Inactive') user_status
        ,hla.description||DECODE(hla.address_line_1,NULL,'',',')||hla.address_line_1||DECODE(hla.address_line_2,NULL,'',',')||hla.address_line_2||DECODE(hla.address_line_3,NULL,'',',')||hla.address_line_3||','||hla.town_or_city location_details
        ,papf.email_address
-       --,apps.PER_Mobile_Utils.get_concat_phone_numbers ( p_in_person_id    => papf.person_id, p_in_phone_type   => 'MPL') mobile_phone
+       --,DECODE(papf.current_emp_or_apl_flag,NULL,'Inactive','Y','Active') Employee_status
+       --,apps.designation_from_user_name_id(fu.user_name,null) emp_designation
+       --,papf.current_emp_or_apl_flag
+       --,paaf.primary_flag
+       --,apps.PER_Mobile_Utils.get_concat_phone_numbers ( p_in_person_id => papf.person_id, p_in_phone_type => 'MPL') mobile_phone
        --,PAAF.*
        --,PAPF.*
        --,PJ.*

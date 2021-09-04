@@ -1,4 +1,4 @@
-/* Formatted on 9/2/2021 9:42:11 AM (QP5 v5.287) */
+/* Formatted on 9/2/2021 9:54:31 AM (QP5 v5.287) */
   SELECT *
     FROM xxdbl_item_errors
    WHERE 1 = 1 AND BATCH_ID = 16828
@@ -17,7 +17,12 @@ SELECT COUNT (1) l_error_count
   --,xim.*
   FROM xxdbl_item_master xim
  WHERE batch_id = :p_batch_id AND item_status = 'ERROR';
-
+ 
+ SELECT COUNT (1) l_error_count
+  --,xim.*
+  FROM xxdbl_item_master xim
+ WHERE batch_id = :p_batch_id AND item_status = 'SUBMITTED';
+ 
 SELECT *
   FROM xxdbl_item_batches
  WHERE batch_id = :p_batch_id;
@@ -80,3 +85,8 @@ SELECT template_id,
        category_name
   FROM xxdbl_item_org_hierarchy
  WHERE item_master_id = :p_item_master_id AND ROWNUM = 1;
+
+SELECT msib.inventory_item_id
+  FROM mtl_system_items_b msib
+ WHERE     msib.segment1 = :p_item_code
+       AND msib.organization_id = :l_master_org_id;

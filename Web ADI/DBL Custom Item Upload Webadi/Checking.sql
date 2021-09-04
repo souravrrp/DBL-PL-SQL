@@ -3,10 +3,10 @@
 
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
- WHERE 1 = 1 AND ITEM_CODE IN ('PUMA-59016300')
-
+ WHERE 1 = 1 AND ITEM_CODE IN ('SPRECONS000000085711')
 --Order by desc
 ;
+
 SELECT pw.ROWID rx, pw.*
   FROM xxdbl.xxdbl_item_master_conv pw
  WHERE     1 = 1
