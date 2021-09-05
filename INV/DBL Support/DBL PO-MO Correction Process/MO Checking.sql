@@ -13,6 +13,7 @@
                -- AND organization_id=165
                --AND TO_CHAR (transaction_date, ' MON-YY ')='MAR-21'
                --AND TRANSACTION_ID = 35984257
+               --AND MO_NUMBER='1467057'
                AND transaction_id = NVL ( :p_transaction_id, transaction_id)
 ORDER BY transaction_date DESC;
 
@@ -57,7 +58,8 @@ ORDER BY mmt.transaction_date DESC;
    WHERE     1 = 1
          AND HOU.ORGANIZATION_ID = OOD.OPERATING_UNIT
          AND OOD.OPERATING_UNIT = OU.ORG_ID
-         AND OOD.ORGANIZATION_NAME = 'COLOR CITY LTD 2 GENERAL- IO'
+         AND OOD.ORGANIZATION_ID=153
+         --AND OOD.ORGANIZATION_NAME = 'COLOR CITY LTD 2 GENERAL- IO'
 ORDER BY HOU.DEFAULT_LEGAL_CONTEXT_ID,
          OOD.OPERATING_UNIT,
          OOD.ORGANIZATION_CODE;

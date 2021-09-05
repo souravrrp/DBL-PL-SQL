@@ -82,6 +82,7 @@ SELECT xxdbl.formula_no,
 --AND NVL (xxdbl.verify_flag, 'N') != 'Y'
 --AND NVL (batch_number, -1) = NVL (:p_batch_number, NVL (batch_number, -1))
 ;
+
 SELECT DISTINCT formula_no, formula_vers, attribute3
   FROM xxdbl_thread_formula_upd_stg
  WHERE attribute3 IS NOT NULL

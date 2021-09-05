@@ -1,31 +1,32 @@
-/* Formatted on 10/4/2020 3:46:33 PM (QP5 v5.287) */
---------------------Spare Consumable Item--------------------------------------------
+/* Formatted on 9/4/2021 9:44:32 AM (QP5 v5.354) */
+--------------------Count no of Item--------------------------------------------
+
+SELECT COUNT (segment1)
+  FROM mtl_system_items_b_kfv
+ WHERE segment1 LIKE '%SPRECONS%' AND organization_id = 138;
+
+--------------------Spare Consumable Item---------------------------------------
 
 SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
- WHERE segment1 LIKE '%SPRECONS000000064%';
-
---------------------Ceramic Digital Ink Item--------------------------------------------
-
-SELECT MAX (segment1)
-  FROM mtl_system_items_b_kfv
- WHERE segment1 LIKE '%SPRECONS000000064%';
+ WHERE segment1 LIKE '%SPRECONS000000085%' AND organization_id = 138;
 
 --------------------Fixed Asset Item--------------------------------------------
 
 SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
- WHERE segment1 LIKE 'FASSET%';
+ WHERE segment1 LIKE 'FASSET%003%';
 
 
---------------------Ribon Item--------------------------------------------
+--------------------Ribon Item--------------------------------------------------
 
 SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
- WHERE segment1 LIKE 'RIBON%';
+ WHERE segment1 LIKE 'RIBON%'
+  AND organization_id = 138;
 
 
---------------------Yarn Item--------------------------------------------
+--------------------Yarn Item---------------------------------------------------
 
 SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
@@ -44,18 +45,18 @@ SELECT MAX (segment1)
          ood.organization_id,
          ORGANIZATION_NAME,
          a.inventory_item_id,
-         a.segment1 AS Item_Code,
+         a.segment1     AS Item_Code,
          description,
          --LOT_CONTROL_CODE,
          PRIMARY_UOM_CODE,
          SECONDARY_UOM_CODE,
-         b.segment2 "Item_Category",
-         b.segment3 "Item_Type",
+         b.segment2     "Item_Category",
+         b.segment3     "Item_Type",
          a.PROCESS_COSTING_ENABLED_FLAG,
          a.PROCESS_YIELD_SUBINVENTORY,
          a.PROCESS_SUPPLY_SUBINVENTORY
-    FROM apps.mtl_system_items_b_kfv a,
-         apps.mtl_item_categories_v b,
+    FROM apps.mtl_system_items_b_kfv      a,
+         apps.mtl_item_categories_v       b,
          apps.org_organization_definitions ood
    WHERE     a.inventory_item_id = b.inventory_item_id
          AND a.organization_id = b.organization_id
@@ -80,7 +81,7 @@ SELECT XIB.BATCH_NAME,
        XIB.BATCH_STATUS,
        XIM.ITEM_STATUS,
        XIM.CATALOG_TYPE,
-       XIM.ITEM_MASTER_ID ITEM_ID,
+       XIM.ITEM_MASTER_ID     ITEM_ID,
        XIM.ITEM_CODE,
        XIM.ITEM_DESCRIPTION,
        XIM.LONG_DESCRIPTION,
@@ -96,12 +97,12 @@ SELECT XIB.BATCH_NAME,
        XIOH.EXPENSE_ACCOUNT,
        XIOH.PRODUCT_LINE,
        XIOH.EXPENSE_SUB_ACCOUNT
-       --,XIB.*
-       --,XIM.*
-       --,XIOH.*
-  FROM XXDBL_ITEM_BATCHES XIB,
-       XXDBL_ITEM_MASTER XIM,
-       XXDBL_ITEM_ORG_HIERARCHY XIOH
+  --,XIB.*
+  --,XIM.*
+  --,XIOH.*
+  FROM XXDBL_ITEM_BATCHES        XIB,
+       XXDBL_ITEM_MASTER         XIM,
+       XXDBL_ITEM_ORG_HIERARCHY  XIOH
  WHERE     1 = 1
        AND XIB.BATCH_ID = XIM.BATCH_ID
        AND XIM.ITEM_MASTER_ID = XIOH.ITEM_MASTER_ID
