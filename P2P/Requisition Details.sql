@@ -4,6 +4,8 @@
          --ou.ledger_name,
          --ou.legal_entity_name,
          msi.organization_id,
+         hla.location_code               location,
+         prl.destination_subinventory    department,
          prh.requisition_header_id       req_hdr_id,
          prh.segment1                    requisition_number,
          prh.description                 req_hdr_description,
@@ -21,9 +23,6 @@
          mic.segment3                    item_type,
          mic.segment4                    micelog,
          mic.segment1 || '.' || mic.segment2 || '.' || mic.segment3 || '.' || mic.segment4                 item_micegory,
-         hou.name                       organization,
-         hla.location_code               location,
-         prl.destination_subinventory    department,
          prl.currency_code               currency,
          prh.creation_date               req_creation_date,
          prh.approved_date               req_approved_date,
@@ -57,8 +56,10 @@
          --AND NVL (prl2.cancel_flag, 'N') <> 'Y'
          --AND TRUNC (sysdate) BETWEEN ppf2.effective_start_date(+) AND ppf2.effective_end_date(+)
          AND (( :p_org_id IS NULL) OR (prh.org_id = :p_org_id))
+         AND ( :p_ou_name IS NULL OR (hou.name = :p_ou_name))
+         AND ( :p_organization_code IS NULL OR (ood.organization_code = :p_organization_code))
          AND ( :p_req_no IS NULL OR (prh.segment1 = :p_req_no))
          AND (( :p_emp_id IS NULL) OR (ppf.employee_number = :p_emp_id))
          AND ( :p_item_code IS NULL OR (msi.segment1 = :p_item_code))
-         AND (   :p_item_desc IS NULL OR (UPPER (msi.description) LIKE UPPER ('%' || :p_item_desc || '%')))
+         AND ( :p_item_desc IS NULL OR (UPPER (msi.description) LIKE UPPER ('%' || :p_item_desc || '%')))
 ORDER BY prh.segment1, prl.line_num;

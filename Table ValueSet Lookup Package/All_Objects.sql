@@ -14,6 +14,7 @@ AND     (:P_OBJECT_NAME IS NULL OR (UPPER(OBJECT_NAME) LIKE UPPER('%'||:P_OBJECT
 AND     (:P_OWNER_NAME IS NULL OR (UPPER(OWNER) = UPPER(:P_OWNER_NAME) ))
 --AND OBJECT_NAME LIKE '%XXDBL%'
 --AND OWNER IN ('XXDBL','APPS')
+--AND     STATUS = 'VALID'
 ;
 
 ------------------------------------------------------------------------------------------------
