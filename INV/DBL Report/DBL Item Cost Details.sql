@@ -40,7 +40,7 @@
          AND odd.organization_id IN (150)
          AND clm.period_desc = :p_Period_Name                       --'DEC%17'
          AND clm.legal_entity_id = :p_Legal_Entity
-         AND cd.costcalc_orig <> 1
+         --AND cd.costcalc_orig <> 1
 GROUP BY msi.concatenated_segments,
          msi.description,
          msi.primary_uom_code,

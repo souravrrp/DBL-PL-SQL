@@ -34,7 +34,7 @@ select --DISTINCT
        apps.per_jobs pj,
        apps.hr_all_organization_units haou,
        apps.hr_locations_all hla,
-       fnd_user fu
+       applsys.fnd_user fu
  where    1=1 
        and paaf.business_group_id = 81
        and papf.person_id = paaf.person_id(+)

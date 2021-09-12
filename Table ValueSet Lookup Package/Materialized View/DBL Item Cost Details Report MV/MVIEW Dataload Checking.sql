@@ -5,7 +5,7 @@ SELECT *
 
 SELECT *
   FROM APPS.XXDBL_INV_ITEM_CST_RPT_MV
- WHERE 1 = 1 AND PERIOD_DESC = 'JUL-21' AND legal_entity_id = 23277;
+ WHERE 1 = 1 AND PERIOD_DESC = 'AUG-21' AND legal_entity_id = 23277;
 
 SELECT * FROM inv.mtl_material_transactions;
 
