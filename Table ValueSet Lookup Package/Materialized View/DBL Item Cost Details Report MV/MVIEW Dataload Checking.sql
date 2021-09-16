@@ -1,12 +1,14 @@
 /* Formatted on 8/12/2021 11:32:17 AM (QP5 v5.354) */
 SELECT *
   FROM APPS.XXDBL_INV_ITEM_CST_RPT_MV#
- WHERE 1 = 1 AND PERIOD_DESC = 'JUL-21' AND legal_entity_id = 23277;
+ WHERE 1 = 1  AND PERIOD_DESC = 'AUG-21' 
+ AND ITEM_CODE='ET01160-10355' AND legal_entity_id = 23277;
 
 SELECT *
   FROM APPS.XXDBL_INV_ITEM_CST_RPT_MV
  WHERE 1 = 1 
- --AND PERIOD_DESC = 'AUG-21' 
+ AND PERIOD_DESC = 'AUG-21' 
+ AND ITEM_CODE='ET01160-10355'
  AND legal_entity_id = 23277;     --23277     --23282    --23285
 
 SELECT * FROM inv.mtl_material_transactions;

@@ -3,7 +3,9 @@
 
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
- WHERE 1 = 1 AND ITEM_CODE IN ('SPRECONS000000085711')
+ WHERE 1 = 1 
+ AND ITEM_CODE IN ('SPRECONS000000086220')
+ --AND PRIMARY_UOM='TON'
 --Order by desc
 ;
 
@@ -25,19 +27,20 @@ SELECT msii.SET_PROCESS_ID, msii.*
  WHERE     1 = 1
        --AND set_process_id = 1000
        --AND EXISTS (SELECT 1 FROM XXDBL.xxdbl_item_master_conv xxdbl WHERE xxdbl.item_code = msii.segment1)
-       AND segment1 = 'SPRECONS000000085466'
-       AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
+       AND segment1 = 'SPRECONS000000086220'
+       --AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
 
 SELECT *
   FROM MTL_SYSTEM_ITEMS_B
  WHERE     1 = 1
-       AND SEGMENT1 = 'SPRECONS000000085466'
+       AND SEGMENT1 = 'SPRECONS000000086220'
        AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
 
 SELECT *
   FROM XXDBL.xxdbl_item_master_conv xxdbl
  WHERE     1 = 1
        AND xxdbl.status = 'I'
+       AND ITEM_CODE='SPRECONS000000086220'
        AND xxdbl.organization_code = 'IMO'
        --AND EXISTS (SELECT 1 FROM inv.mtl_system_items_interface msii WHERE xxdbl.item_code = msii.segment1 AND TRUNC (msii.creation_date) = TRUNC (SYSDATE))
        AND EXISTS
@@ -159,3 +162,9 @@ SELECT msi.segment1
   FROM mtl_system_items_b msi
  WHERE     (UPPER (msi.description) = UPPER ( :p_item_description))
        AND msi.organization_id = 138;
+       
+SELECT
+*
+FROM
+MTL_UNITS_OF_MEASURE_TL
+WHERE UOM_CODE='TON'

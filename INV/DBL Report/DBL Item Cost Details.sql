@@ -36,6 +36,7 @@
          AND msi.inventory_item_id = mic.inventory_item_id
          -- AND mic.segment2 ='SEMI FINISH GOODS'
          -- AND msi.concatenated_segments like 'FT%'
+         --AND msi.concatenated_segments ='ET01160-10355'
          AND mic.category_set_id = 1100000062 -- CCL2 = 1100000062, Ceramic = 1100000061
          AND odd.organization_id IN (150)
          AND clm.period_desc = :p_Period_Name                       --'DEC%17'
