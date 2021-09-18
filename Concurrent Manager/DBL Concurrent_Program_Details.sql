@@ -45,8 +45,7 @@
          and fl.lookup_code = fcp.execution_method_code
          and fe.executable_id = fcp.executable_id
          and fe.executable_id = fev.executable_id
-         and fav.application_id = fav.application_id
-         and fav.application_id = fcp.application_id
+         and fav.application_id = fev.application_id
          and fav.application_id = rtf.application_id(+)
          and fe.execution_file_name = rtf.template_code(+)
 order by fcpl.user_concurrent_program_name,fdfcuv.column_seq_num;

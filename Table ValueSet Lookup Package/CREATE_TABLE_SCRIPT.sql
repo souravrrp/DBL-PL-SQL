@@ -94,7 +94,7 @@ CREATE OR REPLACE SYNONYM apps.xxdbl_cust_creation_tbl FOR xxdbl.xxdbl_cust_crea
 
 GRANT SELECT ON xxdbl.xxdbl_gate_pass_detail TO apps WITH GRANT OPTION;
 
-GRANT INSERT, SELECT, UPDATE ON xxdbl.xxdbl_gate_pass_detail TO appsdbl;
+GRANT INSERT, SELECT, UPDATE, DELETE ON xxdbl.xxdbl_gate_pass_detail TO appsdbl;
 
 GRANT SELECT ON xxdbl.xxdbl_gate_pass_detail TO appsro;
 
