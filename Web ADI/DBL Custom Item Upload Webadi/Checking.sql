@@ -4,7 +4,7 @@
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
  WHERE 1 = 1 
- AND ITEM_CODE IN ('SPRECONS000000086220')
+ AND ITEM_CODE IN ('FASSET00000000003331')
  --AND PRIMARY_UOM='TON'
 --Order by desc
 ;
