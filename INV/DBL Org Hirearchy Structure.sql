@@ -13,6 +13,7 @@
                   AND ood.operating_unit = hou.organization_id
                   AND (   :p_organization_code IS NULL OR (ood.organization_code = :p_organization_code))
                   AND (   :p_org_name IS NULL OR (UPPER (ood.organization_name) LIKE UPPER ('%' || :p_org_name || '%')))
+                  AND os.attribute1='Y'
        START WITH pose.organization_id_parent = 138
        CONNECT BY PRIOR pose.organization_id_child = pose.organization_id_parent
 ORDER SIBLINGS BY ood.organization_code, pose.organization_id_child;

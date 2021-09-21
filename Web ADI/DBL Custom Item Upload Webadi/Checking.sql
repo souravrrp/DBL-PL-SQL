@@ -4,7 +4,7 @@
 SELECT *
   FROM xxdbl.xxdbl_item_master_conv
  WHERE 1 = 1 
- AND ITEM_CODE IN ('FASSET00000000003331')
+ AND ITEM_CODE IN ('SPRECONS000000086370')
  --AND PRIMARY_UOM='TON'
 --Order by desc
 ;
@@ -13,7 +13,7 @@ SELECT pw.ROWID rx, pw.*
   FROM xxdbl.xxdbl_item_master_conv pw
  WHERE     1 = 1
        AND NVL (pw.status, 'X') NOT IN ('I', 'S', 'D')
-       AND pw.item_code LIKE 'FASSET00000000003268%'
+       AND pw.item_code LIKE 'SPRECONS000000086370%'
        AND pw.organization_code = 'IMO'
        AND NOT EXISTS
               (SELECT 1
@@ -27,8 +27,9 @@ SELECT msii.SET_PROCESS_ID, msii.*
  WHERE     1 = 1
        --AND set_process_id = 1000
        --AND EXISTS (SELECT 1 FROM XXDBL.xxdbl_item_master_conv xxdbl WHERE xxdbl.item_code = msii.segment1)
-       AND segment1 = 'SPRECONS000000086220'
-       --AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
+       AND segment1 = 'SPRECONS000000086370'
+       --AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
+       ;
 
 SELECT *
   FROM MTL_SYSTEM_ITEMS_B

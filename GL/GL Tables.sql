@@ -1,4 +1,6 @@
-/* Formatted on 11/8/2020 10:27:32 AM (QP5 v5.354) */
+/* Formatted on 9/21/2021 9:53:11 AM (QP5 v5.354) */
+SELECT * FROM apps.gl_je_headers;
+
 SELECT *
   FROM apps.gl_code_combinations
  WHERE 1 = 1;
