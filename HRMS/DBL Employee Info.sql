@@ -42,7 +42,7 @@ select --DISTINCT
        and paaf.location_id = hla.location_id(+)
        and paaf.organization_id=haou.organization_id(+)
        and ((:p_user_id is null) or (fu.user_id = :p_user_id))
-       and ((:p_user_name is null) or (fu.user_name = :p_user_name))
+       --and ((:p_user_name is null) or (fu.user_name = :p_user_name))
        and ((:p_person_id is null) or (papf.person_id = :p_person_id))
        and ((:p_emp_id is null) or (nvl(papf.employee_number,papf.npw_number) = :p_emp_id))
        and ((:p_employee_name is null) or (upper (papf.first_name || ' ' || papf.middle_names || ' ' || papf.last_name) like upper ('%' || :p_employee_name || '%'))) 
