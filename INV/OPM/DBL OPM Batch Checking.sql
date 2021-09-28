@@ -1,0 +1,7 @@
+/* Formatted on 9/26/2021 4:58:33 PM (QP5 v5.354) */
+SELECT *
+  FROM APPS.GME_BATCH_HEADER GBH, APPS.GME_BATCH_STEPS GBS
+ WHERE     1 = 1
+       AND GBH.BATCH_ID = GBS.BATCH_ID
+       AND GBH.BATCH_NO = :P_BATCH_NO                                 --414587
+       AND GBS.BATCHSTEP_ID = 1490025
