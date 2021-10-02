@@ -1,3 +1,44 @@
+
+
+INSERT INTO apps.po_requisitions_interface_all (
+                            interface_source_code,
+                            org_id,
+                            destination_type_code,
+                            authorization_status,
+                            preparer_id,
+                            charge_account_id,
+                            source_type_code,
+                            unit_of_measure,
+                            line_type_id,
+                            quantity,
+                            destination_organization_id,
+                            deliver_to_location_id,
+                            deliver_to_requestor_id,
+                            item_id,
+                            need_by_date,
+                            suggested_vendor_name,
+                            unit_price,
+                            line_attribute6)
+                 VALUES ('IMPORT_INV',                 --interface_source_code
+                         NVL (l_org_id, p_org_id),                    --org_id
+                         'INVENTORY',                  --destination_type_code
+                         'INCOMPLETE',                  --authorization_status
+                         NVL (p_user_id, 0),                     --preparer_id
+                         l_expense_account,                --charge_account_id
+                         'VENDOR',                          --source_type_code
+                         l_primary_unit_of_measure,          --unit_of_measure
+                         l_line_type_id,                        --line_type_id
+                         NVL (p_quantity, 1),                       --quantity
+                         l_destination_organization_id, --destination_organization_id
+                         l_deliver_to_location_id,   --deliver_to_location_id,
+                         NVL (p_user_id),            --deliver_to_requestor_id
+                         l_inventory_item_id,                        --item_id
+                         SYSDATE,                               --need_by_date
+                         NULL,                         --suggested_vendor_name
+                         NVL (p_unit_price, 1),                   --unit_price
+                         p_specification       --line_attribute6 --specication
+                                        );
+
 Oracle has provided these below three interface tables in the PO conversion.
  
 1.po_headers_interface
