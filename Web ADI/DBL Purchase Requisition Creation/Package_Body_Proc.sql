@@ -1,9 +1,9 @@
-/* Formatted on 10/2/2021 10:32:42 AM (QP5 v5.365) */
+/* Formatted on 10/2/2021 11:53:46 AM (QP5 v5.365) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_pr_creation_pkg
 IS
     -- CREATED BY : SOURAV PAUL
     -- CREATION DATE : 28-SEP-2021
-    -- LAST UPDATE DATE :29-SEP-2021
+    -- LAST UPDATE DATE :02-OCT-2021
     -- PURPOSE : DBL Purchase Requisition Creation
     PROCEDURE create_pr_from_interface (ERRBUF    OUT VARCHAR2,
                                         RETCODE   OUT VARCHAR2)

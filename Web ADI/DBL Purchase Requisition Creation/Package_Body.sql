@@ -1,9 +1,9 @@
-/* Formatted on 9/30/2021 2:38:41 PM (QP5 v5.365) */
+/* Formatted on 10/2/2021 11:53:46 AM (QP5 v5.365) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_pr_creation_pkg
 IS
     -- CREATED BY : SOURAV PAUL
     -- CREATION DATE : 28-SEP-2021
-    -- LAST UPDATE DATE :29-SEP-2021
+    -- LAST UPDATE DATE :02-OCT-2021
     -- PURPOSE : DBL Purchase Requisition Creation
     PROCEDURE create_pr_from_interface (ERRBUF    OUT VARCHAR2,
                                         RETCODE   OUT VARCHAR2)
@@ -169,7 +169,7 @@ IS
         ------------------------------------------------------------------------
         l_org_id                        NUMBER;
         l_destination_organization_id   NUMBER;
-        deliver_to_location_id          NUMBER;
+        l_deliver_to_location_id        NUMBER;
         ------------------------------------------------------------------------
         l_line_type_id                  NUMBER;
         ------------------------------------------------------------------------
@@ -179,6 +179,7 @@ IS
         l_expense_account               NUMBER;
         l_item_category_id              NUMBER;
         l_category_id                   NUMBER;
+        l_person_id                     NUMBER;
         ------------------------------------------------------------------------
 
         l_error_message                 VARCHAR2 (3000);
@@ -191,7 +192,7 @@ IS
             SELECT ood.operating_unit, ood.organization_id, aou.location_id
               INTO l_org_id,
                    l_destination_organization_id,
-                   deliver_to_location_id
+                   l_deliver_to_location_id
               FROM apps.org_organization_definitions  ood,
                    hr.hr_all_organization_units       aou
              WHERE     ood.organization_code = p_organization_code
@@ -313,6 +314,25 @@ IS
                 l_error_code := 'E';
         END;
 
+        --------------------------------------------------
+        ----------Validate PO Line Type-------------------
+        --------------------------------------------------
+
+        BEGIN
+            SELECT employee_id
+              INTO l_person_id
+              FROM applsys.fnd_user
+             WHERE user_id = p_user_id;
+        EXCEPTION
+            WHEN NO_DATA_FOUND
+            THEN
+                l_error_message :=
+                       l_error_message
+                    || ','
+                    || 'Please enter correct PO Line Type.';
+                l_error_code := 'E';
+        END;
+
 
         --------------------------------------------------------------------------------------------------------------
         --------Condition to show error if any of the above validation picks up a data entry error--------------------
@@ -326,55 +346,43 @@ IS
         ELSIF NVL (l_error_code, 'A') <> 'E'
         THEN
             INSERT INTO apps.po_requisitions_interface_all (
-                            interface_source_code,
-                            org_id,
-                            destination_type_code,
-                            authorization_status,
-                            preparer_id,
-                            charge_account_id,
-                            source_type_code,
-                            unit_of_measure,
-                            line_type_id,
-                            quantity,
-                            destination_organization_id,
-                            deliver_to_location_id,
-                            deliver_to_requestor_id,
-                            item_id,
-                            need_by_date,
-                            suggested_vendor_name,
-                            unit_price,
-                            line_attribute6)
+                            INTERFACE_SOURCE_CODE,
+                            ORG_ID,
+                            DESTINATION_TYPE_CODE,
+                            AUTHORIZATION_STATUS,
+                            PREPARER_ID,
+                            CHARGE_ACCOUNT_ID,
+                            SOURCE_TYPE_CODE,
+                            UNIT_OF_MEASURE,
+                            LINE_TYPE_ID,
+                            QUANTITY,
+                            DESTINATION_ORGANIZATION_ID,
+                            DELIVER_TO_LOCATION_ID,
+                            DELIVER_TO_REQUESTOR_ID,
+                            ITEM_ID,
+                            NEED_BY_DATE,
+                            UNIT_PRICE,
+                            LINE_ATTRIBUTE6)
                  VALUES ('IMPORT_INV',                 --interface_source_code
-                         p_org_id, --org_id--(Validate against apps.org_organization_definitions table)
+                         NVL (l_org_id, p_org_id),                    --org_id
                          'INVENTORY',                  --destination_type_code
                          'INCOMPLETE',                  --authorization_status
-                         p_user_id, --preparer_id--(Validate against apps.per_all_people_f tabel)
-                         13185, --charge_account_id--(Vlidate against apps.mtl_system_items_b corresponding to item and inv org),
-                         'VENDOR',                         --SOURCE_TYPE_CODE,
-                         'METRICTON',                        --UNIT_OF_MEASURE
-                         1,   --line_type_id--(Validate against PO_LINE_TYPES)
-                         100,                                       --QUANTITY
-                         204,                   --DESTINATION_ORGANIZATION_ID,
-                         27108,                      --DELIVER_TO_LOCATION_ID,
-                         p_user_id,                  --DELIVER_TO_REQUESTOR_ID
-                         208955, --item_id--(Validate against mtl_system_items_b)
-                         SYSDATE,                               --NEED_BY_DATE
-                         NULL, --'Staples',                    --SUGGESTED_VENDOR_NAME
-                         NVL (p_unit_price, 1),                   --UNIT_PRICE
+                         NVL (l_person_id, 2030),                --preparer_id
+                         l_expense_account,                --charge_account_id
+                         'VENDOR',                          --source_type_code
+                         l_primary_unit_of_measure,          --unit_of_measure
+                         l_line_type_id,                        --line_type_id
+                         NVL (p_quantity, 1),                       --quantity
+                         l_destination_organization_id, --destination_organization_id
+                         l_deliver_to_location_id,   --deliver_to_location_id,
+                         NVL (l_person_id, 2030),    --deliver_to_requestor_id
+                         l_inventory_item_id,                        --item_id
+                         SYSDATE + 2,                           --need_by_date
+                         NVL (p_unit_price, 1),                   --unit_price
                          p_specification       --line_attribute6 --specication
                                         );
 
             COMMIT;
-        ----------------------------------------------------------------------------------------------------
-        -----------Insert data into MTL_SYSTEM_ITEMS_INTERFACE after loading into staging table-------------
-        ----------------------------------------------------------------------------------------------------
-
-        --BEGIN
-        --APPS.xxdbl_item_conv_prc;
-        --COMMIT;
-        --l_return_status := cust_import_data_to_interface (P_ITEM_CODE);
-        --COMMIT;
-        --END;
         END IF;
     END cust_upload_data_to_staging;
 END xxdbl_pr_creation_pkg;
