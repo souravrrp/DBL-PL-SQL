@@ -8,6 +8,7 @@
                   AND ood.organization_id = pose.organization_id_child
                   AND os.organization_structure_id = pose.org_structure_version_id
                   --AND os.name IN ('RMG-PROCESS')
+                  --AND ood.organization_id=138
                   --AND organization_code in ('112')
                   AND (   :p_org_struct_name IS NULL OR (UPPER (os.name) LIKE UPPER ('%' || :p_org_struct_name || '%')))
                   AND ood.operating_unit = hou.organization_id
