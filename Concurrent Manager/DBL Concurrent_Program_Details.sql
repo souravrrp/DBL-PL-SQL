@@ -32,9 +32,9 @@
    where     1 = 1
          and fcp.concurrent_program_id = fcpl.concurrent_program_id
          and fcp.enabled_flag = 'Y'
+         and (   :p_concurrent_program_name is null or (upper (fcpl.user_concurrent_program_name) like upper ('%' || :p_concurrent_program_name || '%')))
          and (   ( :p_executable_name is null) or (upper (fe.execution_file_name) like upper ('%' || :p_executable_name || '%')))
          --AND fe.execution_file_name =NVL(:P_EXECUTABLE_NAME,'XXDBLSTOCKDTL')
-         and (   :p_concurrent_program_name is null or (upper (fcpl.user_concurrent_program_name) like upper ('%' || :p_concurrent_program_name || '%')))
          --AND fcpl.user_concurrent_program_name LIKE '%AKG List of DOs Paid Bill by Pay Date%' --<Your Concurrent Program Name>
          and fdfcuv.descriptive_flexfield_name = '$SRS$.' || fcp.concurrent_program_name
          and ffvs.flex_value_set_id = fdfcuv.flex_value_set_id
