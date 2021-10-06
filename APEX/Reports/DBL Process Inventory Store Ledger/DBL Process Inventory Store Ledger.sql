@@ -1,4 +1,4 @@
-/* Formatted on 10/5/2021 10:18:16 AM (QP5 v5.365) */
+/* Formatted on 10/5/2021 10:36:04 AM (QP5 v5.365) */
 WITH
     MAINS
     AS
@@ -236,7 +236,8 @@ SELECT M.ORGANIZATION_ID,
            AS ISU_VAL,
        ROUND (T.CLS_QTY, 2)
            AS CLS_QTY,
-       ROUND (T.CLS_VAL, 2)
+       --ROUND (T.CLS_VAL, 2)
+       ROUND ((T.OPN_VAL + T.RCV_VAL + T.ISU_VAL), 2)
            AS CLS_VAL,
        ROUND ((T.ISU_VAL / DECODE (T.ISU_QTY, 0, 1, T.ISU_QTY)), 2)
            AVG_ISS_VAL,
