@@ -1,4 +1,4 @@
-/* Formatted on 10/5/2021 10:36:04 AM (QP5 v5.365) */
+/* Formatted on 10/6/2021 1:41:57 PM (QP5 v5.365) */
 WITH
     MAINS
     AS
@@ -219,31 +219,32 @@ SELECT M.ORGANIZATION_ID,
        M.ITEM_CODE,
        M.ITEM_NAME,
        M.UOM,
-       ROUND (T.OPN_QTY, 2)
-           AS OPN_QTY,
-       ROUND (T.OPN_VAL, 2)
-           AS OPN_VAL,
-       ROUND (T.RCV_QTY, 2)
-           AS RCV_QTY,
-       ROUND (T.RCV_VAL, 2)
-           AS RCV_VAL,
-       ROUND (T.OPN_QTY + T.RCV_QTY, 2)
-           AS AVL_QTY,
-       T.AVL_VAL,
-       ROUND (T.ISU_QTY, 2)
-           AS ISU_QTY,
-       ROUND (T.ISU_VAL, 2)
-           AS ISU_VAL,
-       ROUND (T.CLS_QTY, 2)
-           AS CLS_QTY,
-       --ROUND (T.CLS_VAL, 2)
-       ROUND ((T.OPN_VAL + T.RCV_VAL + T.ISU_VAL), 2)
-           AS CLS_VAL,
-       ROUND ((T.ISU_VAL / DECODE (T.ISU_QTY, 0, 1, T.ISU_QTY)), 2)
-           AVG_ISS_VAL,
-       ROUND (NVL (T.AVL_VAL, 0) / (NVL (T.OPN_QTY, 0) + NVL (T.RCV_QTY, 0)),
-              2)
-           AVG_COST_AVA_STOCK
+       ROUND (T.OPN_QTY, 2)                              AS OPN_QTY,
+       ROUND (T.OPN_VAL, 2)                              AS OPN_VAL,
+       ROUND (T.RCV_QTY, 2)                              AS RCV_QTY,
+       ROUND (T.RCV_VAL, 2)                              AS RCV_VAL,
+       ROUND (T.OPN_QTY + T.RCV_QTY, 2)                  AS AVL_QTY,
+       ROUND (T.OPN_VAL + T.RCV_VAL, 2)                  AS AVL_VAL,
+       ROUND (T.ISU_QTY, 2)                              AS ISU_QTY,
+       ROUND (
+           (  ((T.OPN_VAL + T.RCV_VAL) / (T.OPN_QTY + T.RCV_QTY))
+            * ROUND (T.ISU_QTY, 2)),
+           2)                                            AS ISU_VAL,
+       ROUND ((T.OPN_QTY + T.RCV_QTY + T.ISU_QTY), 2)    AS CLS_QTY,
+       ROUND (
+           (  (T.OPN_VAL + T.RCV_VAL)
+            + (  ((T.OPN_VAL + T.RCV_VAL) / (T.OPN_QTY + T.RCV_QTY))
+               * (ROUND (T.ISU_QTY, 2)))),
+           2)                                            AS CLS_VAL,
+       ROUND (
+           (  (  ((T.OPN_VAL + T.RCV_VAL) / (T.OPN_QTY + T.RCV_QTY))
+               * T.ISU_QTY)
+            / DECODE (T.ISU_QTY, 0, 1, T.ISU_QTY)),
+           2)                                            AVG_ISS_VAL,
+       ROUND (
+             (T.OPN_VAL + T.RCV_VAL)
+           / (NVL (T.OPN_QTY, 1) + NVL (T.RCV_QTY, 1)),
+           2)                                            AVG_COST_AVA_STOCK
   FROM MAINS M, TRANS T
  WHERE     M.ORGANIZATION_ID = T.ORGANIZATION_ID
        AND M.INVENTORY_ITEM_ID = T.INVENTORY_ITEM_ID
