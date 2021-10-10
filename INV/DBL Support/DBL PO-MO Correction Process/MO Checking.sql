@@ -84,6 +84,6 @@ SELECT *
 
 --------------------------------------------------------------------------------
 
---DELETE
---FROM xxdbl.xxdbl_mo_account_cor_stg
--- WHERE  status IS NULL;
+DELETE
+FROM xxdbl.xxdbl_mo_account_cor_stg
+ WHERE  status IS NULL;
