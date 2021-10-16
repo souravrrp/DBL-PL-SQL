@@ -2,7 +2,7 @@
 select --DISTINCT
       fu.user_id,
       papf.person_id,
-      fu.user_name,
+      --fu.user_name,
       nvl(nvl(papf.employee_number,papf.npw_number),fu.user_name) employee_number,
        (papf.first_name || ' ' || papf.middle_names || ' ' || papf.last_name)
           as employee_name,
