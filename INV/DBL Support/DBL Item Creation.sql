@@ -9,7 +9,7 @@ SELECT COUNT (segment1)
 
 SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
- WHERE segment1 LIKE '%SPRECONS000000086%' AND organization_id = 138;
+ WHERE segment1 LIKE '%SPRECONS000000087%' AND organization_id = 138;
 
 --------------------Fixed Asset Item--------------------------------------------
 

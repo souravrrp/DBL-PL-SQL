@@ -14,7 +14,7 @@ SELECT rv.application_id,
        rv.end_date
        --,FA.*
        --,RV.*
-       ,RG.*
+       --,RG.*
   FROM apps.fnd_responsibility_vl  rv,
        apps.fnd_application_vl     fa,
        fnd_request_groups          rg,
@@ -30,7 +30,7 @@ SELECT rv.application_id,
        AND rv.request_group_id = rg.request_group_id(+)
        --AND DECODE(rg.zd_edition_name,'SET2','SET1','SET1') = 'SET1'
        --AND rv.application_id = rg.application_id
-       AND rg.zd_edition_name = DECODE(rg.zd_edition_name,'SET1','SET2','SET2')  -- NVL('SET1','SET2')
+       AND NVL(rg.zd_edition_name,'SET2') = DECODE(rg.zd_edition_name,'SET1','SET2','SET2')  -- NVL('SET1','SET2')
        --AND (rg.zd_edition_name = 'SET1' OR rg.zd_edition_name = 'SET2')
        AND rv.end_date IS NULL;
 
