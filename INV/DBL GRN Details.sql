@@ -66,3 +66,11 @@ SELECT rt.transaction_id,
                   FROM apps.po_headers_all pha
                  WHERE     pha.po_header_id = rsl.po_header_id
                        AND ( :p_po_no IS NULL OR (pha.segment1 = :p_po_no)));
+                       
+--------------------------------------------------------------------------------
+
+SELECT *
+    FROM apps.rcv_transactions
+   WHERE 1 = 1 
+   --AND TO_CHAR (transaction_date, 'DD-MON-RRRR') = '04-OCT-2021'
+ORDER BY creation_date DESC;

@@ -6,6 +6,7 @@
          OU.LEGAL_ENTITY_NAME,
          pha.segment1 "PO Number",
          pha.po_header_id,
+         pla.po_line_id,
          pda.po_distribution_id,
          pha.cancel_flag PO_cancel,
          pla.cancel_flag line_cancel,
@@ -19,9 +20,13 @@
          TO_CHAR (TRUNC (pha.last_update_date), 'DD-MON-RR') LAST_UPDATE_DATE,
          TO_CHAR (TRUNC (pha.approved_date), 'DD-MON-RR') APPROVED_DATE,
          pha.created_by,
+         pha.agent_id,
+         pha.comments,
          ppf.full_name po_creator,
+         pv.vendor_id,
          pv.segment1 "Supplier ID",
          pv.vendor_name "Supplier Name",
+         pvsa.vendor_site_id,
          pvsa.vendor_site_code "Supplier Site",
          pla.line_num,
          pla.purchase_basis "Line Type",
@@ -58,6 +63,7 @@
          gcc.segment1 || '.' || gcc.segment2 || '.' || gcc.segment3 || '.' || gcc.segment4 || '.' || gcc.segment5 || '.' || gcc.segment6 || '.' || gcc.segment7 || '.' || gcc.segment8 || '.' || gcc.segment9 po_charge_account,
          gcc1.segment1 || '.' || gcc1.segment2 || '.' || gcc1.segment3 || '.' || gcc1.segment4 || '.' || gcc1.segment5 || '.' || gcc1.segment6 || '.' || gcc1.segment7 || '.' || gcc1.segment8 || '.' || gcc1.segment9 accrual_account,
          --flex.description account_description,
+         pha.clm_document_number,
          prha.segment1 requisition_no
     --,pda.*
     --,prda.*

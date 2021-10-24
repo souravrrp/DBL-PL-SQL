@@ -1,4 +1,4 @@
-/* Formatted on 10/19/2021 5:45:15 PM (QP5 v5.365) */
+/* Formatted on 10/21/2021 11:03:03 AM (QP5 v5.365) */
 BEGIN
     INSERT INTO RCV_HEADERS_INTERFACE (HEADER_INTERFACE_ID,
                                        GROUP_ID,
@@ -29,14 +29,14 @@ BEGIN
                  0,                                        --LAST_UPDATE_LOGIN
                  SYSDATE,                                      --CREATION_DATE
                  0,                                               --CREATED_BY
-                 &vendor_id,                                       --VENDOR_ID
-                 &vendor_site_id,                             --VENDOR_SITE_ID
-                 &to_org_id,                         --SHIP_TO_ORGANIZATION_ID
+                 793,                                --&vendor_id, --VENDOR_ID
+                 3170,                     --&vendor_site_id, --VENDOR_SITE_ID
+                 153,                  --&to_org_id, --SHIP_TO_ORGANIZATION_ID
                  SYSDATE,                              --EXPECTED_RECEIPT_DATE
-                 &employee_id,                                   --EMPLOYEE_ID
+                 384,                            --&employee_id, --EMPLOYEE_ID
                  'Y',                                        --VALIDATION_FLAG
-                 &operating_unit                              --OPERATING_UNIT
-                                );
+                 126                        --&operating_unit --OPERATING_UNIT
+                    );
 
     INSERT INTO RCV_TRANSACTIONS_INTERFACE (INTERFACE_TRANSACTION_ID,
                                             GROUP_ID,
@@ -77,14 +77,14 @@ BEGIN
                'RCV',                          --'FLO',--INTERFACE_SOURCE_CODE
                'DELIVER',                                 --AUTO_TRANSACT_CODE
                'VENDOR',                                 --RECEIPT_SOURCE_CODE
-               &to_org_id,                                --TO_ORGANIZATION_ID
+               153,                         --&to_org_id, --TO_ORGANIZATION_ID
                'PO',                                    --SOURCE_DOCUMENT_CODE
-               &po_header_id,                                   --PO_HEADER_ID
-               &po_line_id,                                       --PO_LINE_ID
+               422627,                         --&po_header_id, --PO_HEADER_ID
+               579896,                             --&po_line_id, --PO_LINE_ID
                RCV_HEADERS_INTERFACE_S.CURRVAL,          --HEADER_INTERFACE_ID
-               &document_num,                                   --DOCUMENT_NUM
+               20113009408,                    --&document_num, --DOCUMENT_NUM
                1,                                          --DOCUMENT_LINE_NUM
                'Y',                                          --VALIDATION_FLAG
-               &amount                                                --AMOUNT
+               10                                           --&amount --AMOUNT
           FROM DUAL;
 END;
