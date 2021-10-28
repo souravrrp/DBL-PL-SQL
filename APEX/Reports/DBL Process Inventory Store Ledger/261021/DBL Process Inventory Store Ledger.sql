@@ -1,4 +1,4 @@
-/* Formatted on 10/26/2021 5:45:38 PM (QP5 v5.365) */
+/* Formatted on 10/27/2021 3:56:31 PM (QP5 v5.365) */
 WITH
     MAINS
     AS
@@ -99,11 +99,9 @@ WITH
                                                                     'MON-YY'),
                                                                 'MON-YY') =
                                                             TO_CHAR (
-                                                                TO_DATE (
-                                                                    (  TRUNC (
-                                                                           :P4_DATE_FR)
-                                                                     - 1),
-                                                                    'DD-MON-RR') 'MON-RR'))
+                                                                TRUNC (
+                                                                    :P4_DATE_FR - 1),
+                                                                'MON-RR')))
                                       * SUM (MMT.PRIMARY_QUANTITY)    OPN_VAL,
                                       TO_NUMBER (0)                   RCV_QTY,
                                       TO_NUMBER (0)                   ISU_QTY,

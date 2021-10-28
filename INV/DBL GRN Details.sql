@@ -47,6 +47,7 @@ SELECT rt.transaction_id,
        AND rt.organization_id = ood.organization_id
        AND ood.operating_unit = hou.organization_id
        --AND rt.transaction_type = 'RECEIVE'
+       AND ( :p_shipment_header_id IS NULL OR (rsh.shipment_header_id = :p_shipment_header_id))
        AND ( :p_grn_no IS NULL OR (rsh.receipt_num = :p_grn_no))
        AND (   :p_operating_unit IS NULL OR (ood.operating_unit = :p_operating_unit))
        AND ( :p_ou_name IS NULL OR (hou.name = :p_ou_name))
