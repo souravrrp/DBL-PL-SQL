@@ -1,5 +1,7 @@
 /* Formatted on 11/26/2020 4:06:34 PM (QP5 v5.354) */
-SELECT * FROM xxdbl.xxdbl_item_upload_webadi;
+SELECT * FROM xxdbl.xxdbl_item_upload_webadi
+WHERE 1=1
+AND FLAG IS NULL;
 
 SELECT COUNT (SEGMENT1) / ROUND (SYSDATE - MIN (CREATION_DATE), 0)    no_per_day
   FROM xxdbl.xxdbl_item_upload_webadi;

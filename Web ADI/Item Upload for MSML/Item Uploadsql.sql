@@ -1,8 +1,10 @@
 SELECT * FROM xxdbl.xxdbl_item_upload_webadi stg
 WHERE 1=1
-AND  FLAG IS NULL
+--AND  FLAG IS NULL
 AND ( :p_item_code IS NULL OR (stg.segment1 = :p_item_code))
-AND ( :p_item_desc IS NULL OR (stg.description = :p_item_desc));
+AND ( :p_item_desc IS NULL OR (stg.description = :p_item_desc))
+AND TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
+;
 
 SELECT *
   FROM mtl_system_items_interface msii
