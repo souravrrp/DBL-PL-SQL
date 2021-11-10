@@ -101,7 +101,7 @@
          AND msi.organization_id = mic.organization_id(+)
          AND pla.category_id = mic.category_id(+)
          AND pla.category_id = mc.category_id(+)
-         --and mic.category_id=mc.category_id(+)
+         --AND mic.category_id=mc.category_id(+)
          AND mc.structure_id = mcs.structure_id(+)
          AND mic.category_set_id = mcs.category_set_id(+)
          AND (pha.cancel_flag IS NULL OR pha.cancel_flag = 'N')
@@ -130,7 +130,7 @@
          AND pha.created_by = fu.user_id
          AND fu.user_name = TO_CHAR (ppf.employee_number)
          AND SYSDATE BETWEEN ppf.effective_start_date AND ppf.effective_end_date
-         --and pda.project_id=ppa.project_id(+)
+         --AND pda.project_id=ppa.project_id(+)
          AND pda.task_id = pt.task_id(+)
          AND pda.req_distribution_id = prda.distribution_id(+)
          AND prda.requisition_line_id = prla.requisition_line_id(+)
@@ -143,13 +143,13 @@
          --and gcc.segment2 in ('BRAND','MKT')
          --and gcc1.segment1||'.'||gcc1.segment2||'.'||gcc1.segment3||'.'||gcc1.segment4||'.'||gcc1.segment5 != '2110.NUL.1050102.9999.00'
          --AND mc.segment1='INGREDIENT'
-         --and ppf.employee_number in (1601)
+         --AND ppf.employee_number in (1601)
          --AND pda.po_distribution_id=482230
          --AND pha.authorization_status = 'REQUIRES REAPPROVAL'
          --AND pha.authorization_status = 'INCOMPLETE'
          --AND pha.authorization_status = 'IN PROCESS'
          --AND pha.authorization_status = 'APPROVED'
-         ---AND pha.authorization_status = 'REJECTED'
+         --AND pha.authorization_status = 'REJECTED'
          --AND pha.CREATION_DATE > '15-JUN-2020'
          --AND pah.action_code = 'APPROVE'
          --AND pah.action_code = 'SUBMIT'
@@ -189,6 +189,7 @@ SELECT *
  WHERE po_header_id = 81461
 --and po_line_id=1472565
 ;
+
 SELECT *
   FROM apps.per_people_f
  WHERE person_id = 2885;

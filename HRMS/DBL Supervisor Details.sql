@@ -1,6 +1,5 @@
 /* Formatted on 5/5/2021 12:05:24 PM (QP5 v5.354) */
 SELECT                                                              --DISTINCT
-       fu.user_id,
        papf.person_id,
        NVL (papf.employee_number, papf.npw_number) employee_number,
        (papf.first_name || ' ' || papf.middle_names || ' ' || papf.last_name) AS employee_name,
@@ -10,6 +9,7 @@ SELECT                                                              --DISTINCT
        hla.description job_location,
        papf.current_emp_or_apl_flag,
        paaf.primary_flag,
+       fu.user_id superv_user_id,
        sup.superv_person_id,
        sup.superv_empno,
        sup.supervisor_name,
@@ -50,8 +50,8 @@ SELECT                                                              --DISTINCT
        AND TRUNC (SYSDATE) BETWEEN TRUNC (paaf.effective_start_date) AND TRUNC (paaf.effective_end_date)
        AND TRUNC (SYSDATE) BETWEEN TRUNC (papf.effective_start_date) AND TRUNC (papf.effective_end_date)
        --AND NVL (papf.employee_number, papf.npw_number) = fu.user_name(+)
-       --and papf.person_id = fu.employee_id(+)
-       and sup.superv_person_id = fu.employee_id(+)
+       and papf.person_id = fu.employee_id(+)
+       --and sup.superv_person_id = fu.employee_id(+)
        --AND papf.person_id = NVL ( :p_person_id, papf.person_id)
        --AND NVL(papf.employee_number,papf.npw_number) IN ('')
        --AND NVL(papfs.employee_number,papfs.npw_number) IN ('101347')

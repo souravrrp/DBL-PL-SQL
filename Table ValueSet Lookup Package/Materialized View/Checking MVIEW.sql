@@ -1,7 +1,7 @@
-/* Formatted on 8/16/2021 10:20:54 AM (QP5 v5.287) */
+/* Formatted on 11/7/2021 2:46:39 PM (QP5 v5.365) */
 SELECT DBMS_METADATA.get_ddl ('MATERIALIZED_VIEW', :P_MVIEW_NAME, :P_OWNER)
   FROM DUAL;
 
 SELECT *
   FROM dba_mviews
- WHERE OWNER = :V_MVIEW_OWNER AND mview_name = :V_MVIEW_NAME
+ WHERE 1 = 1 AND OWNER = :V_MVIEW_OWNER AND mview_name = :V_MVIEW_NAME
