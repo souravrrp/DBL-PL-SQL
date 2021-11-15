@@ -1,24 +1,50 @@
-/* Formatted on 11/9/2021 11:59:42 AM (QP5 v5.365) */
+/* Formatted on 11/11/2021 10:52:35 AM (QP5 v5.365) */
   SELECT ou.ledger_name,
          ou.legal_entity_name,
          pha.org_id,
          hou.name,
          ood.organization_code,
          ood.organization_name,
-         mc.segment1                                           item_category,
-         mc.segment2                                           item_type,
-         msi.segment1                                          item_code,
-         pla.item_description                                  item_name,
-         msi.primary_uom_code                                  uom,
+         mc.segment1
+             item_category,
+         mc.segment2
+             item_type,
+         msi.segment1
+             item_code,
+         pla.item_description
+             item_name,
+         msi.primary_uom_code
+             uom,
          (CASE
               WHEN SUM (pll.quantity) = 0 THEN SUM (prla.quantity)
               ELSE ABS (SUM (prla.quantity) - SUM (pll.quantity))
-          END)                                                 pr_quantity,
-         (SUM (pll.quantity) - SUM (pll.quantity_received))    po_quantity,
-         SUM (pll.quantity_received)                           grn_quantity,
+          END)
+             pr_quantity,
+         (CASE
+              WHEN SUM (pll.quantity_received) = 0 THEN SUM (pll.quantity)
+              ELSE ABS (SUM (pll.quantity) - SUM (pll.quantity_received))
+          END)
+             po_quantity,
+         SUM (pll.quantity_received)
+             grn_quantity,
+         (SELECT SUM (ohqd.primary_transaction_quantity)
+            FROM apps.mtl_onhand_quantities_detail ohqd
+           WHERE     1 = 1
+                 AND EXISTS
+                         (SELECT 1
+                            FROM apps.mtl_secondary_inventories imsi
+                           WHERE     1 = 1
+                                 AND imsi.organization_id =
+                                     ohqd.organization_id
+                                 AND (UPPER (imsi.description) LIKE
+                                          '%QUARANTINE%'))
+                 AND ohqd.organization_id = msi.organization_id
+                 AND ohqd.inventory_item_id = msi.inventory_item_id)
+             quarantine_qty,
          apps.xxdbl_fnc_get_onhand_qty (msi.inventory_item_id,
                                         msi.organization_id,
-                                        'OHQ')                 onhand_quantity
+                                        'OHQ')
+             onhand_quantity
     FROM po.po_headers_all                pha,
          po.po_lines_all                  pla,
          po.po_line_locations_all         pll,
@@ -79,7 +105,6 @@ GROUP BY ou.ledger_name,
          msi.segment1,
          pla.item_description,
          msi.primary_uom_code,
-         apps.xxdbl_fnc_get_onhand_qty (msi.inventory_item_id,
-                                        msi.organization_id,
-                                        'OHQ')
+         msi.inventory_item_id,
+         msi.organization_id
 ORDER BY mc.segment1, mc.segment2, msi.segment1 DESC;

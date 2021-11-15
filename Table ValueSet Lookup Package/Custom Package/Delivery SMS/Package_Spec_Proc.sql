@@ -1,4 +1,3 @@
-/* Formatted on 9/2/2020 5:32:17 PM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE APPS.xxdbl_om_sms_delivery_pkg
 IS
    PROCEDURE upload_data_to_sms_stg_tbl (ERRBUF          OUT VARCHAR2,

@@ -1,4 +1,3 @@
-/* Formatted on 10/22/2020 1:46:04 PM (QP5 v5.354) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_om_sms_delivery_pkg
 IS
     -- CREATED BY : SOURAV PAUL
