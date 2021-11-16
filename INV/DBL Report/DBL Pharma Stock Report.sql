@@ -1,4 +1,4 @@
-/* Formatted on 11/11/2021 10:52:35 AM (QP5 v5.365) */
+/* Formatted on 11/15/2021 3:05:56 PM (QP5 v5.365) */
   SELECT ou.ledger_name,
          ou.legal_entity_name,
          pha.org_id,
@@ -44,7 +44,12 @@
          apps.xxdbl_fnc_get_onhand_qty (msi.inventory_item_id,
                                         msi.organization_id,
                                         'OHQ')
-             onhand_quantity
+             onhand_quantity,
+         (SELECT NVL (SUM (mr.reservation_quantity), 0)
+            FROM inv.mtl_reservations mr
+           WHERE     mr.organization_id = msi.organization_id
+                 AND mr.inventory_item_id = msi.inventory_item_id)
+             reserve_quantity
     FROM po.po_headers_all                pha,
          po.po_lines_all                  pla,
          po.po_line_locations_all         pll,

@@ -97,6 +97,7 @@
          AND trunc(mmt.transaction_date) between nvl(:p_transaction_date_from,trunc(mmt.transaction_date)) and nvl(:p_transaction_date_to,trunc(mmt.transaction_date))
          AND mmt.transaction_source_id = gbh.batch_id
          AND mmt.organization_id = gbh.organization_id
+         AND msi.organization_id = ood.organization_id
          AND gmd.batch_id = gbh.batch_id
          AND gmd.material_detail_id = mmt.trx_source_line_id
          AND mmt.transaction_id = mtln.transaction_id(+)
