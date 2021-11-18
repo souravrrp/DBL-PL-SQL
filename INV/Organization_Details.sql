@@ -112,3 +112,27 @@ SELECT org_information2         legal_entity,
        --AND org_information3 = '126' --:p_org_id
        AND (   :p_organization_code IS NULL OR (pm.organization_code = :p_organization_code))
 ;
+
+--------------------------------------------------------------------------------
+
+select ood.operating_unit,
+       ood.organization_name,
+       ood.organization_code,
+       ood.organization_id,
+       msi.secondary_inventory_name     subinventory_code,
+       msi.description                  subinventory_name
+       --ood.business_group_id,
+       --ood.set_of_books_id,
+       --ood.chart_of_accounts_id
+  --,OOD.*
+  --,MSI.*
+  from apps.org_organization_definitions  ood,
+       apps.mtl_secondary_inventories     msi
+ where     1 = 1
+       and msi.organization_id = ood.organization_id
+       AND (   :p_operating_unit IS NULL OR (ood.operating_unit = :p_operating_unit))
+       and (   :p_organization_code is null or (ood.organization_code = :p_organization_code))
+       AND (   :p_org_name IS NULL OR (UPPER (ood.organization_name) LIKE UPPER ('%' || :p_org_name || '%')))
+       and (   :p_sub_inv_code is null or (msi.secondary_inventory_name = :p_sub_inv_code))
+       AND (   :p_sub_inv_name IS NULL OR (UPPER (msi.description) LIKE UPPER ('%' || :p_sub_inv_name || '%')))
+       and msi.disable_date is null;

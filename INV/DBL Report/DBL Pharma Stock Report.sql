@@ -1,4 +1,4 @@
-/* Formatted on 11/15/2021 3:05:56 PM (QP5 v5.365) */
+/* Formatted on 11/18/2021 3:59:05 PM (QP5 v5.365) */
   SELECT ou.ledger_name,
          ou.legal_entity_name,
          pha.org_id,
@@ -11,7 +11,7 @@
              item_type,
          msi.segment1
              item_code,
-         pla.item_description
+         msi.description
              item_name,
          msi.primary_uom_code
              uom,
@@ -36,6 +36,8 @@
                            WHERE     1 = 1
                                  AND imsi.organization_id =
                                      ohqd.organization_id
+                                 AND imsi.secondary_inventory_name =
+                                     ohqd.subinventory_code
                                  AND (UPPER (imsi.description) LIKE
                                           '%QUARANTINE%'))
                  AND ohqd.organization_id = msi.organization_id
@@ -108,7 +110,7 @@ GROUP BY ou.ledger_name,
          mc.segment1,
          mc.segment2,
          msi.segment1,
-         pla.item_description,
+         msi.description,
          msi.primary_uom_code,
          msi.inventory_item_id,
          msi.organization_id

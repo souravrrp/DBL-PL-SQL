@@ -13,8 +13,8 @@ SELECT                                                              --DISTINCT
        sup.superv_person_id,
        sup.superv_empno,
        sup.supervisor_name,
-       sup.current_emp_or_apl_flag,
-       sup.primary_flag,
+       sup.current_emp_or_apl_flag sup_emp_status,
+       sup.primary_flag sup_primary_flag,
        DECODE(fu.end_date,NULL,'Active','Inactive') sup_user_status
   --,PAAF.*
   --,PAPF.*

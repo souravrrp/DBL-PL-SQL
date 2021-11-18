@@ -58,29 +58,27 @@ ORDER BY ORGANIZATION_CODE;
 
 --------------------------------------------------------------------------------
 
-SELECT OOD.OPERATING_UNIT,
-       OOD.ORGANIZATION_NAME,
-       OOD.ORGANIZATION_CODE,
-       OOD.ORGANIZATION_ID,
-       MSI.SECONDARY_INVENTORY_NAME SUBINVENTORY_CODE,
-       MSI.DESCRIPTION SUBINVENTORY_NAME,
-       OOD.BUSINESS_GROUP_ID,
-       OOD.SET_OF_BOOKS_ID,
-       OOD.CHART_OF_ACCOUNTS_ID
+select ood.operating_unit,
+       ood.organization_name,
+       ood.organization_code,
+       ood.organization_id,
+       msi.secondary_inventory_name     subinventory_code,
+       msi.description                  subinventory_name
+       --ood.business_group_id,
+       --ood.set_of_books_id,
+       --ood.chart_of_accounts_id
   --,OOD.*
   --,MSI.*
-  FROM APPS.ORG_ORGANIZATION_DEFINITIONS OOD,
-       APPS.MTL_SECONDARY_INVENTORIES MSI
- WHERE     1 = 1
-       AND MSI.ORGANIZATION_ID = OOD.ORGANIZATION_ID
-       AND OOD.ORGANIZATION_ID = :P_ORGANIZATION_ID
-       --OPERATING UNIT: LEDGER_ID--MASTER_ORG
-       --ORGANIZATION_NAME--ORGANIZATION_CODE
-       --ORGANIZATION_ID: SUB-LEDGER_ID
-       --BUSINESS_GROUP_ID: INVENTORY_ID                      --101
-       --AND ORGANIZATION_CODE=:P_ORGANIZATION_CODE--'SCI'
-       --AND OPERATING_UNIT=:P_OPERATING_UNIT--85
-       AND MSI.DISABLE_DATE IS NULL;
+  from apps.org_organization_definitions  ood,
+       apps.mtl_secondary_inventories     msi
+ where     1 = 1
+       and msi.organization_id = ood.organization_id
+       AND (   :p_operating_unit IS NULL OR (ood.operating_unit = :p_operating_unit))
+       and (   :p_organization_code is null or (ood.organization_code = :p_organization_code))
+       AND (   :p_org_name IS NULL OR (UPPER (ood.organization_name) LIKE UPPER ('%' || :p_org_name || '%')))
+       and (   :p_sub_inv_code is null or (msi.secondary_inventory_name = :p_sub_inv_code))
+       AND (   :p_sub_inv_name IS NULL OR (UPPER (msi.description) LIKE UPPER ('%' || :p_sub_inv_name || '%')))
+       and msi.disable_date is null;
 
 --------------------------------------------------------------------------------
   /* Formatted on 1/28/2020 4:21:06 PM (QP5 v5.287) */

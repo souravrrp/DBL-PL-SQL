@@ -1,4 +1,4 @@
-/* Formatted on 11/15/2021 4:47:18 PM (QP5 v5.365) */
+/* Formatted on 11/16/2021 10:35:15 AM (QP5 v5.365) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_email_delivery_pkg
 IS
     -- CREATED BY : SOURAV PAUL
@@ -47,6 +47,6 @@ IS
                 || SQLCODE
                 || ' -ERROR- '
                 || SQLERRM);
-    END iou_email_status_update;
+    END inv_track_sms_status_update;
 END xxdbl_email_delivery_pkg;
 /
