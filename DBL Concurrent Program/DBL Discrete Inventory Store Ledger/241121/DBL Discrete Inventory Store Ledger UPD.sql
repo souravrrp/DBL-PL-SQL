@@ -1,4 +1,4 @@
-/* Formatted on 11/24/2021 3:19:10 PM (QP5 v5.365) */
+/* Formatted on 11/24/2021 4:10:34 PM (QP5 v5.365) */
 WITH
     MAINS
     AS
@@ -160,13 +160,29 @@ WITH
          T.OPN_VAL,
          T.RCV_QTY,
          T.RCV_VAL,
-         T.OPN_QTY + T.RCV_QTY                                           AVL_QTY,
-         T.OPN_VAL + T.RCV_VAL                                           AVL_VAL,
+         T.OPN_QTY + T.RCV_QTY
+             AVL_QTY,
+         T.OPN_VAL + T.RCV_VAL
+             AVL_VAL,
          T.ISU_QTY,
          T.ISU_VAL,
          T.CLS_QTY,
          T.CLS_VAL,
-         ROUND ((T.ISU_VAL / DECODE (T.ISU_QTY, 0, 1, T.ISU_QTY)), 2)    AVG_ISS_VAL
+         ROUND ((T.ISU_VAL / DECODE (T.ISU_QTY, 0, 1, T.ISU_QTY)), 2)
+             AVG_ISS_VAL,
+         TO_CHAR (
+             (SELECT NVL (MAX (TRUNC (A.TRANSACTION_DATE)), NULL)
+                FROM INV.MTL_MATERIAL_TRANSACTIONS A
+               WHERE     A.TRANSACTION_TYPE_ID IN (63,
+                                                   32,
+                                                   31,
+                                                   100,
+                                                   3)
+                     AND SIGN (PRIMARY_QUANTITY) = -1
+                     AND A.INVENTORY_ITEM_ID = M.INVENTORY_ITEM_ID
+                     AND A.ORGANIZATION_ID = M.ORGANIZATION_ID
+                     AND TRUNC (A.TRANSACTION_DATE) <= :P_DATE_TO + .99999))
+             AS LAST_ISSUE_DATE
     FROM MAINS M, TRANS T
    WHERE     M.ORGANIZATION_ID = T.ORGANIZATION_ID
          AND M.INVENTORY_ITEM_ID = T.INVENTORY_ITEM_ID
