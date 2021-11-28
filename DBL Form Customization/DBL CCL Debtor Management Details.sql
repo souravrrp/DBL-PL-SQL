@@ -43,4 +43,5 @@ SELECT DISTINCT
        AND ( :p_lc_number IS NULL OR (mlh.master_lc_number = :p_lc_number))
        AND ( :p_customer_no IS NULL OR (mlh.customer_number = :p_customer_no))
        AND mlh.master_lc_number  = cih.attribute1(+)
-       AND cih.comm_inv_header_id = cil.comm_inv_header_id(+);
+       AND cih.comm_inv_header_id = cil.comm_inv_header_id(+)
+       AND ( :p_ci_no IS NULL OR (cih.comm_inv_number = :p_ci_no));
