@@ -1,4 +1,3 @@
-/* Formatted on 5/6/2021 10:51:52 AM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_inv_trx_acct_cor_pkg
 IS
    -- CREATED BY : SOURAV PAUL
@@ -144,7 +143,7 @@ IS
          DBMS_OUTPUT.PUT_LINE ('COMBINATION_ID= ' || l_ccid);
       ELSE
          DBMS_OUTPUT.PUT_LINE (
-            'This is a New Combination. Validation Starts….');
+            'This is a New Combination. Validation Startsï¿½.');
          ----------------------------------------------------------------
          ------------Validate the New Combination--------------------------
          ----------------------------------------------------------------
@@ -160,7 +159,7 @@ IS
          IF l_valid_combination
          THEN
             DBMS_OUTPUT.PUT_LINE (
-               'Validation Successful! Creating the Combination…');
+               'Validation Successful! Creating the Combinationï¿½');
             ----------------------------------------------------------------
             -------------------Create the New CCID--------------------------
             ----------------------------------------------------------------

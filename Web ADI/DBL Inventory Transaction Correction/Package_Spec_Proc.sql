@@ -1,4 +1,3 @@
-/* Formatted on 11/15/2020 3:38:34 PM (QP5 v5.287) */
 CREATE OR REPLACE PACKAGE APPS.xxdbl_inv_trx_acct_cor_pkg
 IS
    PROCEDURE mo_acct_corretion_procedure (p_trx_id NUMBER);

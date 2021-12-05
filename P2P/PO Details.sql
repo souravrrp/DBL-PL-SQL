@@ -110,6 +110,8 @@
          AND ( :p_item_code IS NULL OR (msi.segment1 = :p_item_code))
          AND ( :p_item_category IS NULL OR (mc.segment1 = :p_item_category))
          AND ( :p_item_type IS NULL OR (mc.segment2 = :p_item_type))
+         AND (( :supplier_id IS NULL) OR (pv.segment1 = :supplier_id))
+         AND (   ( :p_supplier_name IS NULL) OR (UPPER (pv.vendor_name) LIKE UPPER ('%' || :p_supplier_name || '%')))
          AND pla.po_header_id = pha.po_header_id
          AND pla.po_header_id = pda.po_header_id
          AND pha.po_header_id = pll.po_header_id

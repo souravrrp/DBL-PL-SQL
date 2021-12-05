@@ -2,7 +2,7 @@ CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_inv_trx_acct_cor_pkg
 IS
    -- CREATED BY : SOURAV PAUL
    -- CREATION DATE : 15-OCT-2020
-   -- LAST UPDATE DATE :18-NOV-2020
+   -- LAST UPDATE DATE :06-MAY-2021
    -- PURPOSE : MOVE ORDER AND PURCHASE ORDER CORRECTION WEB ADI
    FUNCTION create_gl_code_combination (p_corrected_gl_code VARCHAR2)
       RETURN NUMBER
@@ -143,7 +143,7 @@ IS
          DBMS_OUTPUT.PUT_LINE ('COMBINATION_ID= ' || l_ccid);
       ELSE
          DBMS_OUTPUT.PUT_LINE (
-            'This is a New Combination. Validation Starts….');
+            'This is a New Combination. Validation Startsï¿½.');
          ----------------------------------------------------------------
          ------------Validate the New Combination--------------------------
          ----------------------------------------------------------------
@@ -159,7 +159,7 @@ IS
          IF l_valid_combination
          THEN
             DBMS_OUTPUT.PUT_LINE (
-               'Validation Successful! Creating the Combination…');
+               'Validation Successful! Creating the Combinationï¿½');
             ----------------------------------------------------------------
             -------------------Create the New CCID--------------------------
             ----------------------------------------------------------------
@@ -296,33 +296,77 @@ IS
                    mmt.transaction_source_id,
                    mmt.organization_id,
                    mmt.transaction_date,
-                   gcc.concatenated_segments,
-                   gcc.code_combination_id
+                   mmt.distribution_account_id
               INTO l_transaction_id,
                    l_mo_number,
                    l_organization_id,
                    l_transaction_date,
-                   l_gl_code,
                    l_gl_code_id
-              FROM mtl_material_transactions mmt,
-                   apps.gl_code_combinations_kfv gcc
+              FROM mtl_material_transactions mmt
              WHERE     1 = 1
-                   AND mmt.distribution_account_id =
-                          gcc.code_combination_id(+)
-                   --AND gcc.concatenated_segments = p_gl_code
-                   --AND mmt.transaction_source_id = p_mo_number
-                   --and mmt.transaction_date=p_trx_date
-                   --AND mmt.organization_id = p_organization_id
-                   AND mmt.transaction_id = p_transaction_id;
+                   AND mmt.transaction_id = p_transaction_id
+                   AND NOT EXISTS
+                          (SELECT 1
+                             FROM xxdbl.xxdbl_mo_account_cor_stg stg
+                            WHERE     stg.status IS NULL
+                                  AND stg.transaction_id = p_transaction_id);
          EXCEPTION
             WHEN NO_DATA_FOUND
             THEN
                l_error_message :=
                      l_error_message
                   || ','
-                  || 'Please enter correct Transaction Id';
+                  || 'Transaction ID not exists or already uploaded.';
                l_error_code := 'E';
          END;
+
+         ------------------------------------------------
+         -----------------Existing GL Code--------------
+         ------------------------------------------------
+
+
+         IF l_transaction_id IS NOT NULL AND l_gl_code_id IS NULL
+         THEN
+            SELECT mtrl.to_account_id
+              INTO l_gl_code_id
+              FROM inv.mtl_material_transactions mmt,
+                   inv.mtl_txn_request_lines mtrl
+             WHERE     mmt.transaction_id = l_transaction_id
+                   AND mtrl.line_id = mmt.move_order_line_id;
+
+            IF l_gl_code_id IS NOT NULL
+            THEN
+               BEGIN
+                  UPDATE inv.mtl_material_transactions mmt
+                     SET mmt.distribution_account_id = l_gl_code_id
+                   WHERE mmt.transaction_id = l_transaction_id;
+               END;
+
+               BEGIN
+                  SELECT gcc.concatenated_segments, gcc.code_combination_id
+                    INTO l_gl_code, l_gl_code_id
+                    FROM apps.gl_code_combinations_kfv gcc
+                   WHERE gcc.code_combination_id = l_gl_code_id;
+               EXCEPTION
+                  WHEN NO_DATA_FOUND
+                  THEN
+                     DBMS_OUTPUT.PUT_LINE (
+                        'Please check existing Code Combination.');
+               END;
+            END IF;
+         ELSE
+            BEGIN
+               SELECT gcc.concatenated_segments, gcc.code_combination_id
+                 INTO l_gl_code, l_gl_code_id
+                 FROM apps.gl_code_combinations_kfv gcc
+                WHERE gcc.code_combination_id = l_gl_code_id;
+            EXCEPTION
+               WHEN NO_DATA_FOUND
+               THEN
+                  DBMS_OUTPUT.PUT_LINE (
+                     'Please check existing Code Combination.');
+            END;
+         END IF;
 
 
          --------------------------------------------------

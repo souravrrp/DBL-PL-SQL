@@ -1,16 +1,23 @@
 /* Formatted on 4/12/2021 12:02:16 PM (QP5 v5.354) */
 SELECT DISTINCT
-       --mlh.*
-       --mll1.*
-       --mll2.*
-       --ph.*
-       --pl.*
-       --bsh.*
-       --bsl.*
-       --mph.*
-       --mpl.*
-       --cih.*
-       --cil.*
+       mlh.customer_number customer_no,
+       bsl.order_number order_no,
+       bsh.bill_stat_number bs_no,
+       ph.proforma_number pi_no,
+       ph.manual_pi_no mpi_number,
+       mlh.master_lc_number lc_no,
+       cih.comm_inv_number ci_no
+       --,mlh.*
+       --,mll1.*
+       --,mll2.*
+       --,ph.*
+       --,pl.*
+       --,bsh.*
+       --,bsl.*
+       --,mph.*
+       --,mpl.*
+       --,cih.*
+       --,cil.*
   FROM xxdbl_master_lc_headers       mlh,
        xxdbl_master_lc_line1         mll1,
        xxdbl_master_lc_line2         mll2,
@@ -26,8 +33,8 @@ SELECT DISTINCT
        AND ( :p_org_id IS NULL OR (mlh.org_id = :p_org_id))
        AND mlh.master_lc_header_id = mll1.master_lc_header_id(+)
        AND mlh.master_lc_header_id = mll2.master_lc_header_id(+)
-       --AND mlh.internal_doc_number='lc-66046-000002'
-       --AND mlh.master_lc_number in ('dpcdak810222')
+       --AND mlh.internal_doc_number = 'LC-66046-000002'
+       --AND mlh.master_lc_number in ('DPCDAK810222')
        AND ( :p_pi_number IS NULL OR (mll1.pi_number = :p_pi_number))
        AND mll1.pi_number = ph.proforma_number(+)
        AND ph.proforma_header_id = pl.proforma_header_id(+)
