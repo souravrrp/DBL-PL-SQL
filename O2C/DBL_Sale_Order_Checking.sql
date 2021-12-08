@@ -9,6 +9,7 @@
          ooh.order_number,
          ooh.header_id,
          ool.line_id,
+         ottt.name order_type,
          ooh.order_type_id,
          ooh.ordered_date,
          ooh.demand_class_code                               demand_class,
@@ -50,7 +51,8 @@
     FROM apps.oe_order_lines_all  ool,
          apps.oe_order_headers_all ooh,
          inv.mtl_system_items_b   msi,
-         apps.ar_customers        ac
+         apps.ar_customers        ac,
+         oe_transaction_types_tl ottt
    WHERE     1 = 1
          AND (( :p_org_id IS NULL) OR (ooh.org_id = :p_org_id))
          AND ooh.header_id = ool.header_id
@@ -59,6 +61,7 @@
          AND TRUNC (ool.actual_shipment_date) BETWEEN NVL ( :p_invoice_date_from, TRUNC ( ool.actual_shipment_date)) AND NVL ( :p_invoice_date_to, TRUNC ( ool.actual_shipment_date))
          AND (   :p_customer_number IS NULL OR (ac.customer_number = :p_customer_number))
          AND (   :p_cust_name IS NULL OR (UPPER (ac.customer_name) LIKE UPPER ('%' || :p_cust_name || '%')))
+         --AND ottt.name IN ('Return Order Sewing Thd Apprv','Return Replacement')
          --AND ac.customer_number IN ('187056')
          --AND ooh.order_number IN ('1759890')
          --AND ool.line_number=9
@@ -73,6 +76,7 @@
          --AND TO_CHAR (ooh.ordered_date, 'dd-mon-rr') = '17-jun-19'
          --AND ooh.order_type_id=1101
          --AND ooh.ship_from_org_id=1346
+         AND ooh.order_type_id = ottt.transaction_type_id
          AND ool.inventory_item_id = msi.inventory_item_id
          AND ool.ship_from_org_id = msi.organization_id
          AND ac.customer_id = ool.sold_to_org_id
