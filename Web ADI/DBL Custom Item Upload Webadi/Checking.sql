@@ -75,6 +75,11 @@ UPDATE xxdbl.XXDBL_ITEM_MASTER_CONV
    SET status = 'I', STATUS_MESSAGE = 'INTERFACED'
  WHERE status IS NULL;
 
+
+DELETE xxdbl.XXDBL_ITEM_MASTER_CONV
+ WHERE status IS NULL;
+ 
+
 --------------------------------------------------------------------------------
 
 

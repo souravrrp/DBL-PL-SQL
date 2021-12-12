@@ -34,7 +34,8 @@ SELECT SHIPMENT_ID,
        cust_trx_type_id,
        INSERT_STATUS
   FROM XXDBL.XX_EXPLC_SHIPMENT_MST
- WHERE 1 = 1 AND TO_CHAR (BL_DATE, 'MON-RRRR') = 'NOV-2021';
+ WHERE 1 = 1 AND TO_CHAR (BL_DATE, 'MON-RRRR') = 'NOV-2021'
+ AND BL_NO='ASDA/JFL/SCB/NOV/21/2302';
 
 SELECT SHIPMENT_ID,
        COMM_INVOICE_NO,
@@ -45,7 +46,7 @@ SELECT SHIPMENT_ID,
        SHIPMENT_MODE,
        SHIP_TO_ORG_ID
   FROM XXDBL.XX_EXPLC_SHIPMENT_COMM
- WHERE 1 = 1 AND SHIPMENT_ID IN (195467, 195468);
+ WHERE 1 = 1 AND SHIPMENT_ID IN (210182);
 
 SELECT SHIPMENT_ID,
        PRODUCT_UOM,
@@ -60,7 +61,7 @@ SELECT SHIPMENT_ID,
        EXPLC_ORDER_STYLE,
        CURRENCY_UNIT_PRICE
   FROM XXDBL.XX_EXPLC_SHIPMENT_DTL
- WHERE 1 = 1 AND SHIPMENT_ID IN (195467, 195468);
+ WHERE 1 = 1 AND SHIPMENT_ID IN (210182);
 
 --------------------------------------------------------------------------------
 
@@ -119,7 +120,8 @@ DELETE FROM XXDBL.XX_EXPLC_SHIPMENT_DTL
          AND shipment_date IS NOT NULL
          AND comm_invoice_no IS NOT NULL
          AND sm.org_id = :p_org_id
-         AND sm.ar_invoice_id IS NULL
+         --AND sm.ar_invoice_id IS NULL
+         AND BL_NO='ASDA/JFL/SCB/NOV/21/2302'
          AND TRUNC (sm.shipment_date) >= '01-JAN-2015'
          AND TO_CHAR (sm.shipment_date, 'MON-YY') = :p_period_name
          AND NOT EXISTS
@@ -128,3 +130,63 @@ DELETE FROM XXDBL.XX_EXPLC_SHIPMENT_DTL
                    WHERE     ra.attribute1 = TO_CHAR (sm.shipment_id)
                          AND ra.org_id = sm.org_id)
 ORDER BY invoice_id;
+
+
+SELECT sm.org_id,
+                  sm.shipment_id invoice_id,
+                  NULL line_id,
+                  shipment_date trx_date,
+                  shipment_date gl_date,
+                  'USD' invoice_currency_code,
+                  conversion_rate exchange_rate,
+                  'Export of Garments Shipment No ' || sm.shipment_number
+                     comments,
+                  sm.customer_id,
+                  NVL (INVOICE_DESCRIPTION, 'Export of Garments')
+                     item_description,
+                  (product_uom) uom_code,
+                  (NVL (quantity, 0)) quantity,
+                    (  (NVL (item_value, 0))
+                     + (NVL (sc.addition_amt, 0))
+                     - (NVL (sc.discount_amt, 0)))
+                  / (NVL (quantity, 0))
+                     unit_selling_price,
+                    (NVL (item_value, 0))
+                  + (NVL (sc.addition_amt, 0))
+                  - (NVL (sc.discount_amt, 0))
+                     total_price
+             FROM xx_explc_shipment_mst sm,
+                  xx_explc_shipment_comm sc,
+                  (SELECT shipment_id,
+                          comm_invoice_id,
+                          (product_uom) product_uom,
+                          (NVL (product_qty, 0)) quantity,
+                          (  (NVL (product_qty, 0) * NVL (unit_price, 0))
+                           + NVL (add_amount, 0)
+                           - NVL (discount_amt, 0))
+                             item_value
+                     FROM xx_explc_shipment_dtl) sd,
+                  (SELECT conversion_rate, conversion_date
+                     FROM gl_daily_rates_v
+                    WHERE     user_conversion_type = 'Corporate'
+                          AND from_currency = 'USD'
+                          AND to_currency = 'BDT') conv
+            WHERE     sm.shipment_id = sc.shipment_id
+                  AND sc.comm_invoice_id = sd.comm_invoice_id
+                  AND sc.shipment_id = sd.shipment_id
+                  AND sm.shipment_date = conv.conversion_date
+                  AND shipment_date IS NOT NULL
+                  AND comm_invoice_no IS NOT NULL
+                  AND quantity > 0
+                  AND sm.org_id = :p_org_id
+                  AND sm.shipment_id = :p_shipment_id
+                  --AND sm.ar_invoice_id IS NULL
+                  AND TRUNC (sm.shipment_date) >= '01-JAN-2015'
+                  AND TO_CHAR (sm.shipment_date, 'MON-YY') = :p_period_name
+                  AND NOT EXISTS
+                             (SELECT 1
+                                FROM ra_customer_trx_all ra
+                               WHERE     ra.attribute1 =
+                                            TO_CHAR (sm.shipment_id)
+                                     AND ra.org_id = sm.org_id)
+         ORDER BY invoice_id;

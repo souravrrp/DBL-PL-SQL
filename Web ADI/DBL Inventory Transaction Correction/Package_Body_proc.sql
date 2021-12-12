@@ -487,7 +487,7 @@ IS
                        po_headers_all                 poh
                  WHERE     1 = 1
                        AND pd.po_distribution_id = rt.po_distribution_id
-                       AND pd.code_combination_id = cc.code_combination_id
+                       AND pd.code_combination_id = cc.code_combination_id(+)
                        AND rt.po_header_id = poh.po_header_id
                        AND rt.transaction_id = p_transaction_id;
             EXCEPTION

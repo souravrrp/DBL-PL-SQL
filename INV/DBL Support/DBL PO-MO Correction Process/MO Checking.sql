@@ -27,10 +27,12 @@ ORDER BY transaction_date DESC;
          mmt.organization_id,
          mmt.distribution_account_id,
          mmt.transaction_quantity,
+         mtt.transaction_type_name,
          mmt.*
-    FROM inv.mtl_material_transactions mmt
+    FROM inv.mtl_material_transactions mmt, inv.mtl_transaction_types mtt
    WHERE 1 = 1
    AND transaction_id = NVL ( :p_transaction_id, transaction_id)
+   AND mmt.transaction_type_id = mtt.transaction_type_id
 --AND TRANSACTION_ID = 27776075
 --AND mmt.organization_id=165
 --AND TO_CHAR (mmt.transaction_date, ' MON-YY ')='MAR-21'
@@ -78,7 +80,7 @@ SELECT DISTINCT CONCATENATED_SEGMENTS, CODE_COMBINATION_ID
 SELECT *
   FROM APPS.XXDBL_INV_CON_RPT_MV
  WHERE 1 = 1
- AND TRANSACTION_ID=42129946
+ AND TRANSACTION_ID=45111474
 --AND TO_CHAR (TRANSACTION_DATE, 'DD-MON-YY') = '01-FEB-21'
 
 

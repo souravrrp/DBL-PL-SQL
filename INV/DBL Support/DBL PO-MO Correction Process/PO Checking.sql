@@ -32,7 +32,7 @@ SELECT rt.po_header_id,
        stg.*
   FROM rcv_transactions rt, xxdbl.xxdbl_rcv_po_account_cor_stg stg
  WHERE     1 = 1
-       AND transaction_id = 943990
+       AND transaction_id = 1193881
        AND rt.po_header_id = stg.po_header_id
        AND rt.po_line_id = stg.po_line_id
        AND rt.po_distribution_id = stg.po_distribution_id;
@@ -70,8 +70,9 @@ ORDER BY HOU.DEFAULT_LEGAL_CONTEXT_ID,
 SELECT DISTINCT CONCATENATED_SEGMENTS, CODE_COMBINATION_ID
   FROM APPS.GL_CODE_COMBINATIONS_KFV GCCV
  WHERE 1 = 1
---AND CONCATENATED_SEGMENTS='152.102.212.14101.512135.103.999.201.999'
+AND CONCATENATED_SEGMENTS='211.105.601.16103.511105.999.999.201.999'
 ;
+
 --Transaction CHECKING-----------------------------------------------------------------
 
 SELECT rt.po_header_id,
@@ -89,9 +90,9 @@ SELECT rt.po_header_id,
        po_headers_all                 poh
  WHERE     1 = 1
        AND pd.po_distribution_id = rt.po_distribution_id
-       AND pd.code_combination_id = cc.code_combination_id
+       AND pd.code_combination_id = cc.code_combination_id(+)
        AND rt.po_header_id = poh.po_header_id
-       AND transaction_id = 785157;
+       AND transaction_id = 1193881;
 
 SELECT po_header_id,
        organization_id,
@@ -100,4 +101,4 @@ SELECT po_header_id,
        po_distribution_id,
        rt.*
   FROM rcv_transactions rt
- WHERE 1 = 1 AND transaction_id = 785157;
+ WHERE 1 = 1 AND transaction_id = 1193881;

@@ -1,0 +1,1 @@
+EXEC ad_zd_mview.upgrade('APPS','XXDBLCL_SALES_ORDER_DTL_MV');
