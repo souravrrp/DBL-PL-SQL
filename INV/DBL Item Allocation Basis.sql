@@ -1,4 +1,4 @@
-/* Formatted on 2/11/2021 10:30:10 AM (QP5 v5.354) */
+/* Formatted on 12/14/2021 10:35:17 AM (QP5 v5.374) */
 SELECT ood.organization_code,
        a.inventory_item_id,
        a.segment1       AS item_code,
@@ -126,11 +126,12 @@ SELECT alloc_code, concatenated_segments
          AND a.organization_id = b.organization_id
          AND a.alloc_id = c.alloc_id
          AND (   ( :p_organization_id IS NULL AND a.organization_id IN (150))
-            OR (a.organization_id = :p_organization_id))
+              OR (a.organization_id = :p_organization_id))
 --AND ALLOC_CODE LIKE 'ST-DEPRECIATION%'
 GROUP BY alloc_code                           --ROLLUP( CONCATENATED_SEGMENTS)
 ;
-       -----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
 
 
   SELECT alloc_code,
@@ -142,8 +143,9 @@ GROUP BY alloc_code                           --ROLLUP( CONCATENATED_SEGMENTS)
          AND a.organization_id = 150
          AND a.alloc_id = c.alloc_id
          --and alloc_code = :p_alloc_code
+         --and alloc_code like 'ft%'
+         --and concatenated_segments like 'ft%'
          AND a.delete_mark = 0
---       and concatenated_segments not like 'ft%'
 GROUP BY alloc_code, concatenated_segments
   HAVING COUNT (concatenated_segments) > 1
 ORDER BY alloc_code
