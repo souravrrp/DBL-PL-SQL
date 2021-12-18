@@ -1,4 +1,4 @@
-/* Formatted on 12/14/2021 10:35:17 AM (QP5 v5.374) */
+/* Formatted on 12/15/2021 9:29:29 AM (QP5 v5.374) */
 SELECT ood.organization_code,
        a.inventory_item_id,
        a.segment1       AS item_code,
@@ -37,34 +37,33 @@ SELECT ood.organization_code,
        AND a.organization_id = t.organization_id
        AND pp.party_id(+) = NVL (fnu.person_party_id, 0)
        AND inventory_item_status_code = 'Active'
-       --   and    b.segment1 || b.segment2 ||       b.segment3 ||     b.segment4='nananana'
-       --- and mp.process_enabled_flag = 'Y'
        AND category_set_id = 1
-       -- and item_type =
-       -- and set_of_books_id = '2095'
-       --   and mp.organization_code='193' -- in  ('172', '182', '186', '192', '202', '241')
+       --AND b.segment1 || b.segment2 || b.segment3 || b.segment4='NANANANA'
+       --AND mp.process_enabled_flag = 'Y'
+       --AND item_type =
+       --AND set_of_books_id = '2095'
+       --AND mp.organization_code='193'
+       --AND a.creation_date like '%10%oct%'
        AND a.organization_id = 150
        AND b.segment2 = 'FINISH GOODS'
-       --     and a.creation_date like '%10%oct%'
        AND b.segment3 = 'DYED YARN' -- not in ('DYED FIBER','SEWING THREAD','DYED YARN')  --DYED FIBER    --SEWING THREAD    --DYED YARN
---and   a.segment1 like 'RIBON000000000000079'
---     and process_yield_subinventory is null
---       AND NOT EXISTS
---              (SELECT 1
---                 FROM gl_aloc_bas x,
---                      apps.mtl_system_items_kfv y,
---                      gl_aloc_mst z
---                WHERE     x.inventory_item_id = y.inventory_item_id
---                      AND x.organization_id = y.organization_id
---                      AND x.organization_id = a.organization_id
---                      AND x.alloc_id = z.alloc_id
---                      and  (:p_alloc_code is null or (alloc_code = UPPER(:p_alloc_code)))
---                      --       and alloc_code not like '%silo'
---                      AND x.delete_mark = 0
---                      --       and concatenated_segments like 'ft%'
---                      AND a.segment1 = y.concatenated_segments)
-;
-
+/*AND a.segment1 LIKE 'RIBON000000000000079'
+       AND process_yield_subinventory IS NULL
+       AND NOT EXISTS
+               (SELECT 1
+                  FROM gl_aloc_bas                x,
+                       apps.mtl_system_items_kfv  y,
+                       gl_aloc_mst                z
+                 WHERE     x.inventory_item_id = y.inventory_item_id
+                       AND x.organization_id = y.organization_id
+                       AND x.organization_id = a.organization_id
+                       AND x.alloc_id = z.alloc_id
+                       AND (   :p_alloc_code IS NULL
+                            OR (alloc_code = UPPER ( :p_alloc_code)))
+                       --AND alloc_code not like '%silo'
+                       AND x.delete_mark = 0
+                       --AND concatenated_segments like 'ft%'
+                       AND a.segment1 = y.concatenated_segments)*/;
 
 ----------------------------alloc code wise count-------------------------------
 
@@ -75,9 +74,9 @@ SELECT ood.organization_code,
          AND a.organization_id = b.organization_id
          AND a.organization_id = 150
          AND a.alloc_id = c.alloc_id
-         --       and alloc_code not like '%silo'
+         --AND alloc_code not like '%silo'
+         --AND concatenated_segments not like 'ft%'
          AND a.delete_mark = 0
---       and concatenated_segments not like 'ft%'
 GROUP BY alloc_code
 --,a.delete_mark
 ORDER BY SUBSTR (alloc_code, 0, 2);
@@ -91,9 +90,9 @@ ORDER BY SUBSTR (alloc_code, 0, 2);
          AND a.organization_id = b.organization_id
          AND a.organization_id = 150
          AND a.alloc_id = c.alloc_id
-         --       and alloc_code not like '%silo'
+         --AND alloc_code not like '%silo'
+         --AND concatenated_segments not like 'ft%'
          AND a.delete_mark = 0
---       and concatenated_segments not like 'ft%'
 GROUP BY alloc_code, concatenated_segments
 --,a.delete_mark
 ORDER BY SUBSTR (alloc_code, 0, 2);
@@ -106,13 +105,13 @@ SELECT alloc_code, concatenated_segments
        AND a.organization_id = b.organization_id
        AND (   ( :p_organization_id IS NULL AND a.organization_id IN (152))
             OR (a.organization_id = :p_organization_id))
-       --AND A.ORGANIZATION_ID IN (152)
        AND a.alloc_id = c.alloc_id
        AND ( :p_alloc_code IS NULL OR (alloc_code = UPPER ( :p_alloc_code)))
+       --AND A.ORGANIZATION_ID IN (152)
        --AND ALLOC_CODE IN ('SALARY WAGES-FT-2')
        --AND ALLOC_CODE NOT LIKE '%SILO'
-       AND a.delete_mark = 0
        --AND B.CONCATENATED_SEGMENTS LIKE 'FT%'
+       AND a.delete_mark = 0
        AND ( :p_item_code IS NULL OR (b.segment1 = :p_item_code))
        AND (   :p_item_desc IS NULL
             OR (UPPER (b.description) LIKE UPPER ('%' || :p_item_desc || '%')));
@@ -125,11 +124,11 @@ SELECT alloc_code, concatenated_segments
    WHERE     a.inventory_item_id = b.inventory_item_id
          AND a.organization_id = b.organization_id
          AND a.alloc_id = c.alloc_id
+         --AND ALLOC_CODE LIKE 'ST-DEPRECIATION%'
+         --AND alloc_code like 'ST%'
          AND (   ( :p_organization_id IS NULL AND a.organization_id IN (150))
               OR (a.organization_id = :p_organization_id))
---AND ALLOC_CODE LIKE 'ST-DEPRECIATION%'
-GROUP BY alloc_code                           --ROLLUP( CONCATENATED_SEGMENTS)
-;
+GROUP BY alloc_code;
 
 -----------------------------------------------------------------------------
 
@@ -142,16 +141,15 @@ GROUP BY alloc_code                           --ROLLUP( CONCATENATED_SEGMENTS)
          AND a.organization_id = b.organization_id
          AND a.organization_id = 150
          AND a.alloc_id = c.alloc_id
-         --and alloc_code = :p_alloc_code
-         --and alloc_code like 'ft%'
-         --and concatenated_segments like 'ft%'
+         --AND alloc_code = :p_alloc_code
+         --AND alloc_code like 'ft%'
+         --AND concatenated_segments like 'ft%'
          AND a.delete_mark = 0
 GROUP BY alloc_code, concatenated_segments
   HAVING COUNT (concatenated_segments) > 1
 ORDER BY alloc_code
 --SUBSTR (alloc_code, 0, 2)
 ;
-
 --------------------------------------------------------------------------------
 
 SELECT *

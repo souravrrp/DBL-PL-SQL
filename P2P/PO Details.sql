@@ -212,3 +212,14 @@ SELECT *
 
 
 SELECT * FROM apps.xx_lc_details;
+
+--------------------------------------------------------------------------------
+
+SELECT pda.*
+  FROM apps.po_headers_all        pha,
+       apps.po_lines_all          pla,
+       apps.po_distributions_all  pda
+ WHERE     pha.po_header_id = pla.po_header_id(+)
+       AND pha.po_header_id = pda.po_header_id(+)
+       AND pla.po_line_id = pda.po_line_id(+)
+       AND pha.segment1 IN ('15612000021');
