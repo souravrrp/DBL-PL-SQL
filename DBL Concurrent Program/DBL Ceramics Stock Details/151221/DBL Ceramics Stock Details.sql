@@ -1,4 +1,4 @@
-/* Formatted on 12/15/2021 5:52:41 PM (QP5 v5.374) */
+/* Formatted on 12/18/2021 10:19:30 AM (QP5 v5.374) */
   SELECT                                                        ---    ORG_ID,
          item_code,
          item_description,
@@ -1042,7 +1042,7 @@
                      NVL ( :p_subinventory_code, mmt.subinventory_code)
                  AND mtln.transaction_date BETWEEN '01-JAN-2010'
                                                AND :p_date_to + .99999)
-   WHERE lot_number = '0-B-07-04-2021'
+--WHERE lot_number = '0-B-07-04-2021'
 GROUP BY                                                  --ORGANIZATION_CODE,
          --    ORG_ID,
          item_id,
