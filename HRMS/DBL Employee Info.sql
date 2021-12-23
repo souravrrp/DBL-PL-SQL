@@ -139,6 +139,8 @@ select --DISTINCT
        --AND nvl(papf.current_emp_or_apl_flag,'Y') = 'Y'
        --AND papf.current_emp_or_apl_flag is null
        --AND paaf.primary_flag = 'Y'
+       --AND sup.superv_empno='103458'
+       and ((:p_sup_emp_id is null) or (sup.superv_empno = :p_sup_emp_id))
        AND paaf.supervisor_id = sup.superv_person_id(+)
        AND sup.superv_person_id = fus.employee_id(+)
        ;

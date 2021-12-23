@@ -17,6 +17,11 @@ SELECT MAX (segment1)
   FROM mtl_system_items_b_kfv
  WHERE segment1 LIKE 'FASSET%003%';
 
+--------------------Trading Item--------------------------------------------
+
+SELECT MAX (segment1)
+  FROM mtl_system_items_b_kfv
+ WHERE segment1 LIKE 'TRD%' AND ORGANIZATION_ID = 138;
 
 --------------------Ribon Item--------------------------------------------------
 

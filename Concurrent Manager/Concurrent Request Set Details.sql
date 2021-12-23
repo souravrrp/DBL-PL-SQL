@@ -23,7 +23,7 @@
    WHERE     1 = 1
          AND rs.application_id = rss.set_application_id
          AND rs.request_set_id = rss.request_set_id
-         AND rs.user_request_set_name = :p_request_set_name
+         AND rs.user_request_set_name = NVL(:p_request_set_name,rs.user_request_set_name)
          AND e.application_id = fat.application_id
          AND rss.set_application_id = rsp.set_application_id
          AND rss.request_set_id = rsp.request_set_id

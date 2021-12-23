@@ -1,9 +1,9 @@
-/* Formatted on 9/15/2021 9:53:45 AM (QP5 v5.354) */
+/* Formatted on 12/19/2021 11:55:46 AM (QP5 v5.374) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
     -- CREATED BY : SOURAV PAUL
     -- CREATION DATE : 10-AUG-2021
-    -- LAST UPDATE DATE :11-OCT-2021
+    -- LAST UPDATE DATE :19-DEC-2021
     -- PURPOSE : CUSTOM ITEM UPLOAD INTO STAGING TABLE
     FUNCTION check_error_log_to_assign_data
         RETURN NUMBER
@@ -25,6 +25,37 @@ IS
 
         -------**Check the Org Hirearchy to find organization_id**----------------
         CURSOR cur_org_hierarchy (p_org_hierarchy VARCHAR2)
+        IS
+                       SELECT org.organization_id
+                         FROM ORG_ORGANIZATION_DEFINITIONS org,
+                              per_org_structure_elements_v pose,
+                              per_organization_structures_v os
+                        WHERE     1 = 1
+                              AND org.organization_id = pose.organization_id_child
+                              AND os.organization_structure_id =
+                                  pose.org_structure_version_id
+                              AND os.name = p_org_hierarchy
+                   START WITH pose.organization_id_parent = 138
+                   CONNECT BY PRIOR pose.organization_id_child =
+                              pose.organization_id_parent
+            ORDER SIBLINGS BY pose.organization_id_child;
+
+        ------------------------------****ASSIGN_ITEMS****--------------------------
+
+        CURSOR cur_asg IS
+            SELECT *
+              FROM XXDBL.xxdbl_item_master_conv xxdbl
+             WHERE     1 = 1
+                   --AND xxdbl.status = 'I'
+                   AND xxdbl.organization_code = 'IMO'
+                   AND EXISTS
+                           (SELECT 1
+                              FROM mtl_system_items_b msi
+                             WHERE     xxdbl.item_code = msi.segment1
+                                   AND msi.organization_id = 138);
+
+        -------**Check the Org Hirearchy to find organization_id**----------------
+        CURSOR cur_org_asg (p_org_hierarchy VARCHAR2)
         IS
                        SELECT org.organization_id
                          FROM ORG_ORGANIZATION_DEFINITIONS org,
@@ -65,6 +96,39 @@ IS
             COMMIT;
         END LOOP;
 
+        ----------------------------------------------------------------------------
+        FOR ln_cur_asg IN cur_asg
+        LOOP
+            BEGIN
+                FOR ln_org_hierarchy
+                    IN cur_org_asg (ln_cur_asg.org_hierarchy)
+                LOOP
+                    BEGIN
+                        item_assign_template (
+                            ln_cur_asg.item_code,
+                            ln_org_hierarchy.organization_id,
+                            ln_cur_asg.template);
+
+                        IF ln_cur_asg.lcm_enabled = 'Y'
+                        THEN
+                            create_lcm_item_category (
+                                ln_cur_asg.item_code,
+                                ln_org_hierarchy.organization_id);
+                        END IF;
+                    END;
+
+                    UPDATE xxdbl.xxdbl_item_master_conv pw
+                       SET pw.status = 'I', pw.status_message = 'INTERFACED'
+                     WHERE     pw.item_code = ln_cur_asg.item_code
+                           AND pw.organization_code = 'IMO';
+
+                    COMMIT;
+                END LOOP;
+            END;
+
+            COMMIT;
+        END LOOP;
+
         RETURN 0;
     END;
 
@@ -75,7 +139,12 @@ IS
             SELECT *
               FROM xxdbl.xxdbl_item_master_conv pw
              WHERE     NVL (pw.status, 'X') NOT IN ('I', 'S', 'D')
-                   AND pw.item_code = p_item_code;
+                   AND pw.item_code = p_item_code
+                   AND NOT EXISTS
+                           (SELECT 1
+                              FROM mtl_system_items_b msi
+                             WHERE     pw.item_code = msi.segment1
+                                   AND msi.organization_id = 138);
     BEGIN
         FOR ln_cur_intf IN cur_intf
         LOOP
@@ -131,7 +200,8 @@ IS
         l_category_id     NUMBER;
         l_primary_uom     VARCHAR2 (3);
         l_return_status   NUMBER;
-        --------------------------------------------------------------------------
+        ------------------------------------------------------------------------
+        l_assign_orgh     NUMBER;
 
         l_error_message   VARCHAR2 (3000);
         l_error_code      VARCHAR2 (3000);
@@ -148,7 +218,17 @@ IS
                    AND UPPER (imc.item_description) =
                        UPPER (p_item_description);
 
-            IF (l_existing_orgh <> 0)
+            SELECT -1
+              INTO l_assign_orgh
+              FROM mtl_system_items_b msi
+             WHERE     msi.segment1 = p_item_code
+                   AND msi.organization_id = 138
+                   AND EXISTS
+                           (SELECT 1
+                              FROM xxdbl.xxdbl_item_master_conv imc
+                             WHERE imc.item_code <> p_item_code);
+
+            IF (l_existing_orgh > 0)
             THEN
                 BEGIN
                     SELECT LENGTH (TRIM (p_item_code))
@@ -172,7 +252,8 @@ IS
                             || 'Item Code already exists in the staging table.';
                         l_error_code := 'E';
                 END;
-            ELSE
+            ELSIF l_existing_orgh = 0
+            THEN
                 BEGIN
                     SELECT LENGTH (TRIM (p_item_code)),
                            LENGTH (TRIM (p_item_description))

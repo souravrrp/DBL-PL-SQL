@@ -88,7 +88,7 @@ ORDER BY b.user_name;
          AND (   :p_user_name IS NULL OR (UPPER (fu.user_name) = UPPER ( :p_user_name)))
          --AND APPLICATION_SHORT_NAME = 'PO'
          --AND  frt.responsibility_name='ASL : PO - Manager'
-         ---AND fu.user_name IN ('102246', '103822', '100386', '100397')
+         --AND fu.user_name IN ('102246', '103822', '100386', '100397')
          AND fu.user_name = NVL (papf.employee_number, papf.npw_number)
          --AND NVL (papf.current_emp_or_apl_flag, 'Y') = 'Y'
          --AND (   UPPER (frt.responsibility_name) LIKE '%PO%' OR UPPER (frt.responsibility_name) LIKE '%PR%' OR UPPER (frt.responsibility_name) LIKE '%INV%')
