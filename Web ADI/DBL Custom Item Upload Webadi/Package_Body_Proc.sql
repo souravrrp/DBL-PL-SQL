@@ -1,4 +1,4 @@
-/* Formatted on 12/19/2021 11:55:46 AM (QP5 v5.374) */
+/* Formatted on 12/27/2021 11:56:32 AM (QP5 v5.374) */
 CREATE OR REPLACE PACKAGE BODY apps.xxdbl_item_upload_pkg
 IS
     -- CREATED BY : SOURAV PAUL
@@ -218,15 +218,21 @@ IS
                    AND UPPER (imc.item_description) =
                        UPPER (p_item_description);
 
-            SELECT -1
-              INTO l_assign_orgh
-              FROM mtl_system_items_b msi
-             WHERE     msi.segment1 = p_item_code
-                   AND msi.organization_id = 138
-                   AND EXISTS
-                           (SELECT 1
-                              FROM xxdbl.xxdbl_item_master_conv imc
-                             WHERE imc.item_code <> p_item_code);
+            BEGIN
+                SELECT -1
+                  INTO l_assign_orgh
+                  FROM mtl_system_items_b msi
+                 WHERE     msi.segment1 = p_item_code
+                       AND msi.organization_id = 138
+                       AND EXISTS
+                               (SELECT 1
+                                  FROM xxdbl.xxdbl_item_master_conv imc
+                                 WHERE imc.item_code <> p_item_code);
+            EXCEPTION
+                WHEN NO_DATA_FOUND
+                THEN
+                    SELECT -1 INTO l_assign_orgh FROM DUAL;
+            END;
 
             IF (l_existing_orgh > 0)
             THEN
