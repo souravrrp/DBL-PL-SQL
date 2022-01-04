@@ -84,7 +84,7 @@
          --AND mmt.rcv_transaction_id IN ()
          --AND mmt.transaction_set_id IN ()
          --AND mtt.transaction_source_type_id = 5
-         AND mmt.transaction_type_id IN (44, 43, 1002)
+         --AND mmt.transaction_type_id IN (44, 43, 1002)
          --AND msi.segment1 IN ('TH4040-001')
          --AND UPPER (msi.description) LIKE '%TYRE%MICRO%195%R%'
          --AND msi.inventory_item_id = '7297'

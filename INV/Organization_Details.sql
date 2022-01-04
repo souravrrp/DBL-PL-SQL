@@ -14,18 +14,21 @@
          ood.business_group_id,
          ood.chart_of_accounts_id,
          ou.company_code,
-         apps.xx_com_pkg.get_company_name (ou.company_code) company_name
+         apps.xx_com_pkg.get_company_name (ou.company_code) company_name,
+         pm.process_enabled_flag
     --,ood.*
     --,msi.*
     --,ou.*
     --,hou.*
     FROM hr_operating_units          hou,
          org_organization_definitions ood,
-         xxdbl_company_le_mapping_v  ou
-   --,apps.mtl_secondary_inventories msi
+         xxdbl_company_le_mapping_v  ou,
+         --,apps.mtl_secondary_inventories msi,
+         inv.mtl_parameters pm
    WHERE     1 = 1
          AND hou.organization_id = ood.operating_unit
          AND ood.operating_unit = ou.org_id
+         AND ood.organization_id = pm.organization_id
          AND (   :p_operating_unit IS NULL OR (ood.operating_unit = :p_operating_unit))
          AND (   :p_ou_name IS NULL OR (hou.name = :p_ou_name))
          AND (   :p_organization_code IS NULL OR (ood.organization_code = :p_organization_code))

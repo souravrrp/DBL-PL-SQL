@@ -1,4 +1,4 @@
-/* Formatted on 1/16/2021 3:57:10 PM (QP5 v5.354) */
+/* Formatted on 1/3/2022 4:06:51 PM (QP5 v5.374) */
 --q1:Service
 
 SELECT hou.NAME
@@ -54,16 +54,17 @@ SELECT hou.NAME
        ph.rate,
        pl.base_unit_price,
        pl.unit_price,
-       pl.quantity,
+       pll.quantity,
        pda.QUANTITY_BILLED,
        pda.AMOUNT_BILLED,
        DECODE (ph.currency_CODE,
-               'BDT', pl.unit_price * pl.quantity,
-               (pl.unit_price * PH.RATE) * pl.quantity)
+               'BDT', pl.unit_price * pll.quantity,
+               (pl.unit_price * PH.RATE) * pll.quantity)
            "Line Amount"
   FROM po_headers_all                ph,
        po_lines_all                  pl,
        po_distributions_all          pda,
+       apps.po_line_locations_all    pll,
        po_vendors                    pv,
        po_vendor_sites_all           pvs,
        po_distributions_all          pd,
@@ -77,7 +78,7 @@ SELECT hou.NAME
        per_people_x                  ppx1,
        po_lookup_codes               plc
  WHERE     1 = 1
-       AND TO_CHAR (ph.approved_date, 'YYYY') IN (2020)
+       AND TO_CHAR (ph.approved_date, 'YYYY') IN (2021)
        AND ph.vendor_id = pv.vendor_id
        AND ph.po_header_id = pl.po_header_id
        AND ph.vendor_site_id = pvs.vendor_site_id
@@ -104,6 +105,9 @@ SELECT hou.NAME
        AND plc.lookup_code = ph.closed_code
        AND pl.item_id IS NULL
        AND pl.CANCEL_FLAG = 'N'
+       AND ph.po_header_id = pll.po_header_id
+       AND pl.po_line_id = pll.po_line_id
+       AND pll.line_location_id = pda.line_location_id
 UNION ALL
 --q2:Goods
 SELECT hou.NAME
@@ -159,12 +163,12 @@ SELECT hou.NAME
        ph.rate,
        pl.base_unit_price,
        pl.unit_price,
-       pl.quantity,
+       pll.quantity,
        pda.QUANTITY_BILLED,
        pda.AMOUNT_BILLED,
        DECODE (ph.currency_CODE,
-               'BDT', pl.unit_price * pl.quantity,
-               (pl.unit_price * PH.RATE) * pl.quantity)
+               'BDT', pl.unit_price * pll.quantity,
+               (pl.unit_price * PH.RATE) * pll.quantity)
            "Line Amount"
   FROM po_headers_all                ph,
        po_lines_all                  pl,
@@ -172,6 +176,7 @@ SELECT hou.NAME
        po_vendors                    pv,
        po_vendor_sites_all           pvs,
        po_distributions_all          pd,
+       apps.po_line_locations_all    pll,
        po_req_distributions_all      prd,
        po_requisition_lines_all      prl,
        po_requisition_headers_all    prh,
@@ -184,7 +189,7 @@ SELECT hou.NAME
        per_people_x                  ppx1,
        po_lookup_codes               plc
  WHERE     1 = 1
-       AND TO_CHAR (ph.creation_date, 'YYYY') = '2020'
+       AND TO_CHAR (ph.creation_date, 'YYYY') = '2021'
        AND ph.vendor_id = pv.vendor_id
        AND ph.po_header_id = pl.po_header_id
        AND ph.vendor_site_id = pvs.vendor_site_id
@@ -209,7 +214,12 @@ SELECT hou.NAME
        AND plc.lookup_type = 'DOCUMENT STATE'
        --     AND mic.segment1 IN ('IT', 'FIXED ASSET', 'SERVICE')
        AND plc.lookup_code = ph.closed_code
-       --       AND hou.ORGANIZATION_ID=125
+       AND hou.ORGANIZATION_ID = 127
        AND ph.CANCEL_FLAG <> 'Y'
        --   AND ph.ATTRIBUTE8='LOCAL'
-       AND pl.item_id IS NOT NULL;
+       AND pl.item_id IS NOT NULL
+       --and ph.segment1 IN ('21113004937')
+       AND ph.po_header_id = pll.po_header_id
+       AND pl.po_line_id = pll.po_line_id
+       AND pll.line_location_id = pda.line_location_id
+       AND pll.line_location_id = pd.line_location_id;
