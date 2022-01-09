@@ -1,9 +1,9 @@
-/* Formatted on 11/15/2021 12:07:01 PM (QP5 v5.365) */
+/* Formatted on 1/5/2022 12:34:10 PM (QP5 v5.374) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_om_sms_delivery_pkg
 IS
     -- CREATED BY : SOURAV PAUL
     -- CREATION DATE : 05-AUG-2020
-    -- LAST UPDATE DATE :22-OCT-2020
+    -- LAST UPDATE DATE :05-JAN-2022
     -- PURPOSE : INSERT SMS DATA UPLOAD INTO STAGING TABLE
     FUNCTION check_error_log_to_upload_data (SMS_TYPE_PM VARCHAR2)
         RETURN NUMBER
@@ -19,190 +19,195 @@ IS
 
 
         CURSOR cur_bkd_stg IS
-              SELECT oha.org_id,
-                     cus.customer_number,
-                     cus.customer_name,
-                     oha.header_id,
-                     oha.order_number,
-                     oha.booked_date,
-                     SUM (ola.ordered_quantity)                 ordered_quantity,
-                     SUM (ola.ordered_quantity2)                ordered_sec_quantity,
-                     ola.order_quantity_uom                     uom,
-                     SUM (
-                           (ola.ordered_quantity * ola.unit_selling_price)
-                         - ABS (NVL (clv.charge_amount, 0)))    amount,
-                     hcp.phone_number,
-                     pp.phone_number                            sr_phone_number
-                FROM oe_order_headers_all       oha,
-                     oe_order_lines_all         ola,
-                     apps.oe_charge_lines_v     clv,
-                     oe_price_adjustments_v     pav,
-                     ar_customers               cus,
-                     apps.hz_cust_accounts      hca,
-                     apps.hz_party_sites        hps,
-                     apps.hz_cust_acct_sites_all hcasa,
-                     apps.hz_cust_site_uses_all hcsua,
-                     apps.hz_locations          hl,
-                     jtf_rs_salesreps           sal,
-                     jtf_rs_defresources_v      rsv,
-                     (SELECT parent_id, phone_type, phone_number
-                        FROM per_phones
-                       WHERE phone_type = 'W1') pp,
-                     (SELECT owner_table_id, phone_number
-                        FROM ar.hz_contact_points
-                       WHERE contact_point_type = 'PHONE' AND status = 'A') hcp
-               WHERE     oha.header_id = ola.header_id
-                     AND oha.header_id = clv.header_id(+)
-                     AND ola.line_id = clv.line_id(+)
-                     AND oha.header_id = pav.header_id
-                     AND ola.line_id = pav.line_id
-                     AND oha.org_id = ola.org_id
-                     AND oha.flow_status_code != 'CANCELLED'
-                     AND ola.flow_status_code <> 'CANCELLED'
-                     AND pav.adjustment_name = 'SO Header Adhoc Discount'
-                     AND oha.sold_to_org_id = cus.customer_id
-                     AND cus.customer_id = hca.cust_account_id
-                     AND hca.party_id = hps.party_id
-                     AND cus.customer_id = hca.cust_account_id
-                     AND hca.status = 'A'
-                     AND hca.cust_account_id = hcasa.cust_account_id(+)
-                     AND hcasa.status = 'A'
-                     AND hcsua.status = 'A'
-                     AND hcasa.party_site_id = hps.party_site_id
-                     AND hcsua.cust_acct_site_id = hcasa.cust_acct_site_id
-                     AND hcsua.org_id = 126
-                     AND hps.location_id = hl.location_id
-                     AND site_use_code = 'BILL_TO'
-                     AND hps.party_site_id = hcp.owner_table_id(+)
-                     AND hcp.phone_number IS NOT NULL
-                     AND oha.org_id = 126
-                     AND oha.salesrep_id = sal.salesrep_id(+)
-                     AND sal.resource_id = rsv.resource_id
-                     AND oha.org_id = sal.org_id(+)
-                     AND rsv.source_id = pp.parent_id(+)
-                     AND TRUNC (oha.booked_date) = (TRUNC (TO_DATE (SYSDATE)))
-                     --AND TO_CHAR (oha.booked_date, 'MON-RRRR') = TO_CHAR ('AUG-2020')
-                     AND 'BOOKED' = NVL (SMS_TYPE_PM, 'BOOKED')
-                     AND NOT EXISTS
-                             (SELECT 1
-                                FROM ont.oe_order_holds_all ooha
-                               WHERE     oha.header_id = ooha.header_id
-                                     AND ooha.released_flag <> 'Y')
-                     AND NOT EXISTS
-                             (SELECT 1
-                                FROM xxdbl.xxdbl_om_sms_data_upload_stg stg
-                               WHERE     oha.org_id = stg.org_id
-                                     AND oha.header_id = stg.ord_header_id)
-            GROUP BY oha.org_id,
-                     cus.customer_number,
-                     cus.customer_name,
-                     oha.header_id,
-                     oha.order_number,
-                     oha.booked_date,
-                     ola.order_quantity_uom,
-                     hcp.phone_number,
-                     pp.phone_number
-            ORDER BY booked_date DESC;
+            SELECT ORG_ID,
+                   CUSTOMER_NUMBER,
+                   CUSTOMER_NAME,
+                   HEADER_ID,
+                   ORDER_NUMBER,
+                   BOOKED_DATE,
+                   ORDERED_QUANTITY,
+                   ORDERED_SEC_QUANTITY,
+                   UOM,
+                   AMOUNT,
+                   XXDBL_OM_PKG.GET_PARTY_SITE_ADDRESS (BILL_TO_SITE_USE_ID)
+                       BILL_TO_ADDRESS,
+                   XXDBL_OM_PKG.GET_PARTY_SITE_ADDRESS (SITE_USE_ID)
+                       SHIP_TO_ADDRESS,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (SOLD_TO_ORG_ID,
+                                                     'ACCOUNT')
+                       BILL_TO_CONTACT,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PARTY_SITE_ID, 'SITE')
+                       SHIP_TO_CONTACT,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (ATTRIBUTE3, 'ACCOUNT')
+                       CORRESPONDING_DEALER_PHONE,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PERSON_ID, 'SR')
+                       SR_PHONE_NUMBER,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PERSON_ID, 'SRS')
+                       SRS_PHONE
+              FROM (  SELECT OH.ORG_ID,
+                             CUST.CUSTOMER_NUMBER,
+                             CUST.CUSTOMER_NAME,
+                             OH.HEADER_ID,
+                             OH.ORDER_NUMBER,
+                             OH.BOOKED_DATE,
+                             SUM (OL.ORDERED_QUANTITY)
+                                 ORDERED_QUANTITY,
+                             SUM (OL.ORDERED_QUANTITY2)
+                                 ORDERED_SEC_QUANTITY,
+                             OL.ORDER_QUANTITY_UOM
+                                 UOM,
+                             SUM (
+                                   (OL.ORDERED_QUANTITY * OL.UNIT_SELLING_PRICE)
+                                 - ABS (NVL (CLV.CHARGE_AMOUNT, 0)))
+                                 AMOUNT,
+                             OH.SOLD_TO_ORG_ID,
+                             HCASA.PARTY_SITE_ID,
+                             OH.ATTRIBUTE3,
+                             SR.PERSON_ID,
+                             HCSUA.BILL_TO_SITE_USE_ID,
+                             HCSUA.SITE_USE_ID
+                        FROM OE_ORDER_HEADERS_ALL       OH,
+                             OE_ORDER_LINES_ALL         OL,
+                             APPS.OE_CHARGE_LINES_V     CLV,
+                             AR_CUSTOMERS               CUST,
+                             APPS.HZ_CUST_ACCT_SITES_ALL HCASA,
+                             APPS.HZ_CUST_SITE_USES_ALL HCSUA,
+                             RA_SALESREPS_ALL           SR
+                       WHERE     OH.HEADER_ID = OL.HEADER_ID
+                             AND OL.LINE_ID = CLV.LINE_ID(+)
+                             AND OL.FLOW_STATUS_CODE <> 'CANCELLED'
+                             AND OH.SOLD_TO_ORG_ID = CUST.CUSTOMER_ID
+                             AND OL.SHIP_TO_ORG_ID = HCSUA.SITE_USE_ID
+                             AND HCSUA.CUST_ACCT_SITE_ID =
+                                 HCASA.CUST_ACCT_SITE_ID
+                             AND OH.ORG_ID = 126
+                             AND OH.SALESREP_ID = SR.SALESREP_ID
+                             AND OH.ORG_ID = SR.ORG_ID
+                             AND TRUNC (OH.BOOKED_DATE) =
+                                 (TRUNC (TO_DATE (SYSDATE)))
+                             AND 'BOOKED' = NVL (SMS_TYPE_PM, 'BOOKED')
+                             AND NOT EXISTS
+                                     (SELECT 1
+                                        FROM ONT.OE_ORDER_HOLDS_ALL OHH
+                                       WHERE     OH.HEADER_ID = OHH.HEADER_ID
+                                             AND OHH.RELEASED_FLAG <> 'Y')
+                             AND NOT EXISTS
+                                     (SELECT 1
+                                        FROM XXDBL.XXDBL_OM_SMS_DATA_UPLOAD_STG
+                                             STG
+                                       WHERE OH.HEADER_ID = STG.ORD_HEADER_ID)
+                    GROUP BY OH.ORG_ID,
+                             CUST.CUSTOMER_NUMBER,
+                             CUST.CUSTOMER_NAME,
+                             OH.HEADER_ID,
+                             OH.ORDER_NUMBER,
+                             OH.BOOKED_DATE,
+                             OL.ORDER_QUANTITY_UOM,
+                             OH.SOLD_TO_ORG_ID,
+                             HCASA.PARTY_SITE_ID,
+                             OH.ATTRIBUTE3,
+                             SR.PERSON_ID,
+                             HCSUA.BILL_TO_SITE_USE_ID,
+                             HCSUA.SITE_USE_ID);
 
         CURSOR cur_dlv_stg IS
-              SELECT DISTINCT
-                     TL.ORG_ID,
-                     WND.DELIVERY_ID,
-                     (TL.DELIVERY_CHALLAN_NUMBER)     DELIVERY_CHALLAN_NUMBER,
-                     TL.CUSTOMER_NAME,
-                     TL.CUSTOMER_NUMBER,
-                     HCP.PHONE_NUMBER,
-                     OLV.ORDER_NUMBER,
-                     TL.SECONDARY_QUANTITY            SECONDARY_QUANTITY_CTN,
-                     TL.PRIMARY_QUANTITY              PRIMARY_QUANTITY_SFT,
-                     WND.ATTRIBUTE4                   DRIVER_NAME,
-                     WND.ATTRIBUTE5                   DRIVER_CONTACT_NO,
-                     WND.ATTRIBUTE2                   VEHICLE_NO,
-                     WND.CONFIRM_DATE,
-                     TH.TRANSPOTER_CHALLAN_NUMBER,
-                     hl.address1                      bill_to_address,
-                     hlsh.address1                    ship_to_address,
-                     hcp.phone_number                 bill_to_contact,
-                     hcph.phone_number                ship_to_contact,
-                     pp.phone_number                  sr_phone_number --Add SR Phone Number by Sourav 150121
-                FROM apps.ar_customers            ac,
-                     apps.hz_cust_accounts        hca,
-                     apps.hz_cust_acct_sites_all  hcasa,
-                     apps.hz_cust_acct_sites_all  hcasash,
-                     apps.hz_party_sites          hps,
-                     apps.hz_party_sites          hpsh,
-                     apps.hz_cust_site_uses_all   hcsua,
-                     apps.hz_cust_site_uses_all   hcsuash,
-                     apps.hz_locations            hl,
-                     apps.hz_locations            hlsh,
-                     apps.hr_operating_units      hou,
-                     oe_order_headers_all         oha,
-                     xxdbl.xxdbl_omshipping_line_v olv,
-                     wsh_new_deliveries           wnd,
-                     xxdbl_transpoter_line        tl,
-                     xxdbl_transpoter_headers     th,
-                     jtf_rs_salesreps             sal,
-                     jtf_rs_defresources_v        rsv,
-                     (SELECT parent_id, phone_type, phone_number
-                        FROM per_phones
-                       WHERE phone_type = 'W1') pp,
-                     (SELECT owner_table_id, phone_number
-                        FROM ar.hz_contact_points
-                       WHERE contact_point_type = 'PHONE' AND status = 'A') hcp,
-                     (SELECT owner_table_id, phone_number
-                        FROM ar.hz_contact_points
-                       WHERE contact_point_type = 'PHONE' AND status = 'A')
-                     hcph
-               WHERE     hcsua.site_use_id = hcsuash.bill_to_site_use_id(+)
-                     AND ac.customer_id = hca.cust_account_id(+)
-                     AND hcasa.party_site_id = hps.party_site_id(+)
-                     AND hcasash.party_site_id = hpsh.party_site_id(+)
-                     AND hcsua.cust_acct_site_id = hcasa.cust_acct_site_id(+)
-                     AND hcsuash.cust_acct_site_id =
-                         hcasash.cust_acct_site_id(+)
-                     AND hps.location_id = hl.location_id(+)
-                     AND hpsh.location_id = hlsh.location_id(+)
-                     AND hou.organization_id = hcsua.org_id
-                     AND hou.organization_id = hcsuash.org_id
-                     AND hca.cust_account_id = hcasa.cust_account_id(+)
-                     AND hca.cust_account_id = hcasash.cust_account_id(+)
-                     AND ac.customer_id = oha.sold_to_org_id
-                     AND hcsua.site_use_id = oha.invoice_to_org_id
-                     AND hcsuash.site_use_id = oha.ship_to_org_id
-                     AND hcasa.status = 'A'
-                     AND hcsua.status = 'A'
-                     AND hcasash.status = 'A'
-                     AND hcsuash.status = 'A'
-                     AND hca.status = 'A'
-                     AND hca.status = 'A'
-                     AND hps.status = 'A'
-                     AND hpsh.status = 'A'
-                     AND olv.order_number = oha.order_number
-                     AND olv.delivery_id = wnd.delivery_id
-                     AND olv.delivery_challan_number =
-                         tl.delivery_challan_number
-                     AND tl.transpoter_header_id = th.transpoter_header_id
-                     AND hps.party_site_id = hcp.owner_table_id(+)
-                     AND hpsh.party_site_id = hcph.owner_table_id(+)
-                     AND tl.customer_number = hca.account_number
-                     AND tl.org_id = oha.org_id
-                     AND oha.org_id = hcasa.org_id
-                     AND hcasa.org_id = hcasash.org_id
-                     AND tl.org_id = 126
-                     AND hcp.phone_number IS NOT NULL
-                     AND oha.salesrep_id = sal.salesrep_id(+)
-                     AND oha.org_id = sal.org_id(+)
-                     AND sal.resource_id = rsv.resource_id
-                     AND rsv.source_id = pp.parent_id(+)
-                     --AND TO_CHAR (WND.CONFIRM_DATE, 'MON-RRRR') = TO_CHAR ('MAY-2020')
-                     AND TRUNC (wnd.confirm_date) = (TRUNC (TO_DATE (SYSDATE)))
-                     AND 'DELIVERY' = NVL (SMS_TYPE_PM, 'DELIVERY')
-                     AND NOT EXISTS
-                             (SELECT 1
-                                FROM xxdbl.xxdbl_om_sms_data_upload_stg stg
-                               WHERE     tl.org_id = stg.org_id
-                                     AND STG.DELIVERY_ID = WND.DELIVERY_ID)
-            ORDER BY TL.DELIVERY_CHALLAN_NUMBER DESC;
+            SELECT ORG_ID,
+                   DELIVERY_ID,
+                   DELIVERY_CHALLAN_NUMBER,
+                   CUSTOMER_NAME,
+                   CUSTOMER_NUMBER,
+                   ORDER_NUMBER,
+                   SECONDARY_QUANTITY_CTN,
+                   PRIMARY_QUANTITY_SFT,
+                   DRIVER_NAME,
+                   DRIVER_CONTACT_NO,
+                   VEHICLE_NO,
+                   CONFIRM_DATE,
+                   TRANSPORT_CHALLAN_NUMBER
+                       TRANSPOTER_CHALLAN_NUMBER,
+                   XXDBL_OM_PKG.GET_PARTY_SITE_ADDRESS (BILL_TO_SITE_USE_ID)
+                       BILL_TO_ADDRESS,
+                   XXDBL_OM_PKG.GET_PARTY_SITE_ADDRESS (SITE_USE_ID)
+                       SHIP_TO_ADDRESS,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (SOLD_TO_ORG_ID,
+                                                     'ACCOUNT')
+                       BILL_TO_CONTACT,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PARTY_SITE_ID, 'SITE')
+                       SHIP_TO_CONTACT,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (ATTRIBUTE3, 'ACCOUNT')
+                       CORRESPONDING_DEALER_PHONE,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PERSON_ID, 'SR')
+                       SR_PHONE_NUMBER,
+                   XXDBL_OM_PKG.GET_OM_PHONE_NUMBER (PERSON_ID, 'SRS')
+                       SRS_PHONE
+              FROM (  SELECT OH.ORG_ID,
+                             WND.DELIVERY_ID,
+                             OLV.DELIVERY_CHALLAN_NUMBER
+                                 DELIVERY_CHALLAN_NUMBER,
+                             AC.CUSTOMER_NAME,
+                             AC.CUSTOMER_NUMBER,
+                             OLV.ORDER_NUMBER,
+                             SUM (PICKING_QTY_CRT)
+                                 SECONDARY_QUANTITY_CTN,
+                             SUM (PICKING_QTY_SFT)
+                                 PRIMARY_QUANTITY_SFT,
+                             WND.ATTRIBUTE4
+                                 DRIVER_NAME,
+                             WND.ATTRIBUTE5
+                                 DRIVER_CONTACT_NO,
+                             WND.ATTRIBUTE2
+                                 VEHICLE_NO,
+                             WND.CONFIRM_DATE,
+                             OLV.TRANSPORT_CHALLAN_NUMBER,
+                             OH.SOLD_TO_ORG_ID,
+                             HCASA.PARTY_SITE_ID,
+                             OH.ATTRIBUTE3,
+                             SR.PERSON_ID,
+                             HCSUA.BILL_TO_SITE_USE_ID,
+                             HCSUA.SITE_USE_ID
+                        FROM XXDBL.XXDBL_OMSHIPPING_LINE_V OLV,
+                             APPS.HZ_CUST_SITE_USES_ALL   HCSUA,
+                             APPS.HZ_CUST_ACCT_SITES_ALL  HCASA,
+                             APPS.AR_CUSTOMERS            AC,
+                             WSH_NEW_DELIVERIES           WND,
+                             OE_ORDER_HEADERS_ALL         OH,
+                             RA_SALESREPS_ALL             SR
+                       WHERE     OLV.ATTRIBUTE10 = HCSUA.SITE_USE_ID
+                             AND HCSUA.CUST_ACCT_SITE_ID =
+                                 HCASA.CUST_ACCT_SITE_ID
+                             AND HCASA.CUST_ACCOUNT_ID = AC.CUSTOMER_ID
+                             AND OLV.DELIVERY_ID = WND.DELIVERY_ID
+                             AND OLV.ORDER_ID = OH.HEADER_ID
+                             AND OH.SALESREP_ID = SR.SALESREP_ID
+                             AND OH.ORG_ID = SR.ORG_ID
+                             AND OH.ORG_ID = 126
+                             AND TRUNC (WND.CONFIRM_DATE) =
+                                 (TRUNC (TO_DATE (SYSDATE)))
+                             AND 'DELIVERY' = NVL (SMS_TYPE_PM, 'DELIVERY')
+                             AND NOT EXISTS
+                                     (SELECT 1
+                                        FROM XXDBL.XXDBL_OM_SMS_DATA_UPLOAD_STG
+                                             STG
+                                       WHERE     OLV.ORG_ID = STG.ORG_ID
+                                             AND STG.DELIVERY_ID =
+                                                 WND.DELIVERY_ID)
+                    GROUP BY OH.ORG_ID,
+                             WND.DELIVERY_ID,
+                             OLV.DELIVERY_CHALLAN_NUMBER,
+                             AC.CUSTOMER_NAME,
+                             AC.CUSTOMER_NUMBER,
+                             OLV.ORDER_NUMBER,
+                             WND.ATTRIBUTE4,
+                             WND.ATTRIBUTE5,
+                             WND.ATTRIBUTE2,
+                             WND.CONFIRM_DATE,
+                             OLV.TRANSPORT_CHALLAN_NUMBER,
+                             OH.SOLD_TO_ORG_ID,
+                             HCASA.PARTY_SITE_ID,
+                             OH.ATTRIBUTE3,
+                             SR.PERSON_ID,
+                             HCSUA.BILL_TO_SITE_USE_ID,
+                             HCSUA.SITE_USE_ID);
     BEGIN
         L_RETURN_STATUS := NULL;
 
@@ -248,7 +253,9 @@ IS
                                     UOM_CODE,
                                     AMOUNT,
                                     PHONE_NUMBER,
-                                    SR_PHONE_NUMBER)
+                                    SR_PHONE_NUMBER, --Add SR Phone Number by Sourav 150121
+                                    CORRESPONDING_DEALER_PHONE, --Add CORRESPONDING_DEALER_PHONE by Nurul 050122
+                                    SRS_PHONE) --Add SRS_PHONE by Nurul 050122
                          VALUES (v_sms_id,
                                  SYSDATE,
                                  'BOOKED',
@@ -262,8 +269,10 @@ IS
                                  ln_cur_bkd_stg.ordered_sec_quantity,
                                  ln_cur_bkd_stg.uom,
                                  ln_cur_bkd_stg.amount,
-                                 ln_cur_bkd_stg.phone_number,
-                                 ln_cur_bkd_stg.sr_phone_number);
+                                 ln_cur_bkd_stg.BILL_TO_CONTACT,
+                                 ln_cur_bkd_stg.sr_phone_number,
+                                 ln_cur_bkd_stg.CORRESPONDING_DEALER_PHONE,
+                                 ln_cur_bkd_stg.SRS_PHONE);
 
 
                     COMMIT;
@@ -321,7 +330,10 @@ IS
                                     SHIP_TO_ADDRESS,
                                     BILL_TO_CONTACT,
                                     SHIP_TO_CONTACT,
-                                    SR_PHONE_NUMBER) --Add SR Phone Number by Sourav 150121
+                                    PHONE_NUMBER, --Add PHONE_NUMBER by Nurul 050122
+                                    SR_PHONE_NUMBER, --Add SR Phone Number by Sourav 150121
+                                    CORRESPONDING_DEALER_PHONE, --Add CORRESPONDING_DEALER_PHONE by Nurul 050122
+                                    SRS_PHONE) --Add SRS_PHONE by Nurul 050122
                          VALUES (v_sms_id,
                                  SYSDATE,
                                  'DELIVERY',
@@ -343,7 +355,10 @@ IS
                                  ln_cur_dlv_stg.SHIP_TO_ADDRESS,
                                  ln_cur_dlv_stg.BILL_TO_CONTACT,
                                  ln_cur_dlv_stg.SHIP_TO_CONTACT,
-                                 ln_cur_dlv_stg.sr_phone_number);
+                                 ln_cur_dlv_stg.sr_phone_number,
+                                 ln_cur_dlv_stg.BILL_TO_CONTACT,
+                                 ln_cur_dlv_stg.CORRESPONDING_DEALER_PHONE,
+                                 ln_cur_dlv_stg.SRS_PHONE);
 
 
                     COMMIT;

@@ -1,4 +1,4 @@
-/* Formatted on 12/15/2021 9:29:29 AM (QP5 v5.374) */
+/* Formatted on 1/5/2022 3:59:14 PM (QP5 v5.374) */
 SELECT ood.organization_code,
        a.inventory_item_id,
        a.segment1       AS item_code,
@@ -65,10 +65,47 @@ SELECT ood.organization_code,
                        --AND concatenated_segments like 'ft%'
                        AND a.segment1 = y.concatenated_segments)*/;
 
+
+----------------------------*Difference Between Master and Basis*---------------
+
+  SELECT b.segment3                      item_category,
+         COUNT (a.inventory_item_id)     no_of_master_item
+    FROM apps.mtl_system_items_b      a,
+         inv.mtl_system_items_tl      t,
+         apps.mtl_item_categories_v   b,
+         apps.gl_code_combinations_kfv cc,
+         apps.mtl_parameters          mp
+   WHERE     a.inventory_item_id = b.inventory_item_id
+         AND a.organization_id = b.organization_id
+         AND a.expense_account = cc.code_combination_id
+         AND mp.organization_id = a.organization_id
+         AND a.inventory_item_id = t.inventory_item_id
+         AND a.organization_id = t.organization_id
+         AND inventory_item_status_code = 'Active'
+         AND category_set_id = 1
+         AND a.organization_id = 150
+         AND b.segment2 = 'FINISH GOODS'
+         AND b.segment3 IN ('DYED FIBER', 'SEWING THREAD', 'DYED YARN')
+GROUP BY b.segment3
+UNION ALL
+SELECT DISTINCT item_type item_category, no_of_segments
+  FROM (  SELECT alloc_code,
+                 SUBSTR (alloc_code, 0, 2)         item_type,
+                 COUNT (concatenated_segments)     no_of_segments
+            FROM gl_aloc_bas a, apps.mtl_system_items_kfv b, gl_aloc_mst c
+           WHERE     a.inventory_item_id = b.inventory_item_id
+                 AND a.organization_id = b.organization_id
+                 AND a.organization_id = 150
+                 AND a.alloc_id = c.alloc_id
+                 AND a.delete_mark = 0
+        GROUP BY alloc_code);
+
 ----------------------------alloc code wise count-------------------------------
 
-  SELECT alloc_code,                       --substr(alloc_code,0,2) item_type,
-                     COUNT (concatenated_segments) no_of_segments
+  SELECT                                                            --DISTINCT
+         alloc_code,
+         SUBSTR (alloc_code, 0, 2)         item_type,
+         COUNT (concatenated_segments)     no_of_segments
     FROM gl_aloc_bas a, apps.mtl_system_items_kfv b, gl_aloc_mst c
    WHERE     a.inventory_item_id = b.inventory_item_id
          AND a.organization_id = b.organization_id
@@ -78,8 +115,11 @@ SELECT ood.organization_code,
          --AND concatenated_segments not like 'ft%'
          AND a.delete_mark = 0
 GROUP BY alloc_code
+--SUBSTR (alloc_code, 0, 2)
 --,a.delete_mark
 ORDER BY SUBSTR (alloc_code, 0, 2);
+
+--------------------*Check All Allocation Code with Items and no of*------------
 
   SELECT alloc_code,
          concatenated_segments,
@@ -97,7 +137,7 @@ GROUP BY alloc_code, concatenated_segments
 --,a.delete_mark
 ORDER BY SUBSTR (alloc_code, 0, 2);
 
---------------------------------------------------------------------------------
+--------------------*Check Allocation Code with Items*--------------------------
 
 SELECT alloc_code, concatenated_segments
   FROM gl_aloc_bas a, apps.mtl_system_items_kfv b, gl_aloc_mst c
@@ -117,7 +157,7 @@ SELECT alloc_code, concatenated_segments
             OR (UPPER (b.description) LIKE UPPER ('%' || :p_item_desc || '%')));
 
 
---------------------------------------------------------------------------------
+--------------------------*Check the Percentage*--------------------------------
 
   SELECT alloc_code, SUM (a.fixed_percent) basis_value
     FROM gl_aloc_bas a, apps.mtl_system_items_kfv b, gl_aloc_mst c
@@ -130,7 +170,7 @@ SELECT alloc_code, concatenated_segments
               OR (a.organization_id = :p_organization_id))
 GROUP BY alloc_code;
 
------------------------------------------------------------------------------
+--------------------*Check Duplicate Items*-------------------------------------
 
 
   SELECT alloc_code,
