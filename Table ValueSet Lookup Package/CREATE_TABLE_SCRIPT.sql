@@ -30,6 +30,12 @@ AS
 ALTER TABLE table_name
     DROP COLUMN column_name;
 
+ALTER TABLE table_name
+DROP (
+    column_name_1,
+    column_name_2
+);
+
 -----------------------------DROP_PRIMARY_KEY_FROM_TABLE--------------------------
 
 ALTER TABLE w_mtl_system_items_b

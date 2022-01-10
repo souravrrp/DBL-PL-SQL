@@ -1,4 +1,4 @@
-/* Formatted on 1/8/2022 4:54:27 PM (QP5 v5.374) */
+/* Formatted on 1/9/2022 9:47:21 AM (QP5 v5.374) */
   SELECT                                                            --DISTINCT
          ------------------------------------------------------Organization Info
          NVL (prh.org_id, pha.org_id)
@@ -221,6 +221,7 @@
          AND aila.line_type_lookup_code(+) = 'ITEM'
          AND aila.org_id = aia.org_id(+)
          AND aia.invoice_id = aida.invoice_id(+)
+         AND pda.po_distribution_id = aida.po_distribution_id(+)
          AND aida.line_type_lookup_code(+) = 'ACCRUAL'
          AND aia.invoice_id = aipa.invoice_id(+)
          AND aipa.reversal_flag(+) = 'N'
@@ -242,71 +243,6 @@
          AND (   :p_from_creation_date IS NULL
               OR TRUNC (prh.creation_date) BETWEEN :p_from_creation_date
                                                AND :p_to_creation_date)
---GROUP BY NVL (prh.org_id, pha.org_id),
---         hou.name,
---         prh.requisition_header_id,
---         prh.segment1,
---         prh.creation_date,
---         prh.authorization_status,
---         prh.approved_date,
---         prl.need_by_date,
---         pha.segment1,
---         pha.creation_date,
---         pha.authorization_status,
---         pha.approved_date,
---         prl.line_num,
---         msib.segment1,
---         NVL (msib.description, prl.item_description),
---         prl.unit_meas_lookup_code,
---         prl.quantity,
---         pla.quantity,
---         prl.item_id,
---         --pf.person_id,
---         prl.suggested_buyer_id,
---         apim.project_name,
---         prh.attribute8,
---         prl.attribute1,
---         prl.attribute2,
---         prl.attribute3,
---         prl.attribute6,
---         prl.attribute7,
---         NVL (msi.description, secondary_inventory_name),
---         ppf.first_name,
---         ppf.middle_names,
---         ppf.last_name,
---         prl.destination_subinventory,
---         NVL (hla.description, hla.location_code),
---         prl.attribute6,
---         rsh.receipt_num,
---         rt.transaction_date,
---         rt.quantity,
---         rt.po_unit_price,
---         prl.attribute_category,
---         prl.attribute4,
---         prda.distribution_id,
---         pda.req_distribution_id,
---         ---------inv
---         aia.invoice_num,
---         aia.invoice_id,
---         aia.invoice_currency_code,
---         aia.invoice_amount,
---         aia.amount_paid,
---         aia.invoice_type_lookup_code,
---         aia.description,
---         aia.payment_method_lookup_code,
---         aia.terms_id,
---         aia.pay_group_lookup_code,
---         aia.org_id,
---         aia.gl_date,
---         aia.wfapproval_status,
---         aila.line_number,
---         aila.line_type_lookup_code,
---         aila.amount,
---         aida.accounting_date,
---         ----payment
---         aipa.amount,
---         aipa.invoice_payment_type,
---         aipa.accounting_date
 ORDER BY NVL (prh.org_id, pha.org_id),
          prh.segment1,
          prl.line_num,
