@@ -55,7 +55,7 @@ SELECT rt.transaction_id,
        AND (   :p_org_name IS NULL OR (UPPER (ood.organization_name) LIKE UPPER ('%' || :p_org_name || '%')))
        AND (   :p_legal_entity_name IS NULL OR (UPPER (led.legal_entity_name) LIKE UPPER ('%' || :p_legal_entity_name || '%')))
        AND (   :p_legal_entity IS NULL OR (hou.default_legal_context_id = :p_legal_entity))
-       AND ( :p_ledger_id IS NULL OR (ood.set_of_books_id = :p_ledger_id))
+       AND (   :p_ledger_id IS NULL OR (ood.set_of_books_id = :p_ledger_id))
        AND (   :p_organization_id IS NULL OR (ood.organization_id = :p_organization_id))
        AND EXISTS
                (SELECT 1
@@ -70,8 +70,55 @@ SELECT rt.transaction_id,
                        
 --------------------------------------------------------------------------------
 
+SELECT 'RCV_TRX'     rcv_trx
+    --,rsh.*
+    --,rsl.*
+    --,rt.*
+    FROM apps.rcv_shipment_headers rsh,
+         apps.rcv_shipment_lines  rsl,
+         apps.rcv_transactions    rt
+   WHERE     1 = 1
+         AND rsl.shipment_header_id = rsh.shipment_header_id
+         AND rsl.shipment_header_id = rt.shipment_header_id
+         AND rt.organization_id = NVL ( :p_organization_id, rt.organization_id)
+         AND rsl.item_id = NVL ( :p_item_id, rsl.item_id)
+         --AND rt.transaction_type = 'DELIVER'
+         --AND rt.transaction_type = 'RECEIVE'
+         AND rt.shipment_header_id = rsl.shipment_header_id
+         AND rt.po_header_id = rsl.po_header_id
+         AND rt.po_line_id = rsl.po_line_id
+         AND rt.po_line_location_id = rsl.po_line_location_id
+ORDER BY rt.creation_date DESC;
+
+--------------------------------------------------------------------------------
 SELECT *
-    FROM apps.rcv_transactions
+    FROM apps.rcv_transactions rt
    WHERE 1 = 1 
    --AND TO_CHAR (transaction_date, 'DD-MON-RRRR') = '04-OCT-2021'
+   AND rt.transaction_id = NVL(:p_transaction_id,rt.transaction_id)
 ORDER BY creation_date DESC;
+
+--------------------------------------------------------------------------------
+SELECT rt.*
+    FROM apps.rcv_shipment_headers rsh, apps.rcv_transactions rt
+   WHERE     1 = 1
+         AND rsh.shipment_header_id = rt.shipment_header_id
+         AND (   :p_shipment_header_id IS NULL
+              OR (rsh.shipment_header_id = :p_shipment_header_id))
+         AND ( :p_grn_no IS NULL OR (rsh.receipt_num = :p_grn_no))
+ORDER BY rt.creation_date DESC;
+
+--------------------------------------------------------------------------------
+SELECT SUM (rt.quantity)     grn_quantity
+    FROM apps.rcv_shipment_lines rsl, apps.rcv_transactions rt
+   WHERE     1 = 1
+         AND rsl.shipment_header_id = rt.shipment_header_id
+         AND rt.organization_id = NVL(:p_organization_id,rt.organization_id)
+         AND rsl.item_id = NVL(:p_item_id,rsl.item_id)
+         AND rt.transaction_type = 'DELIVER'
+         AND rt.shipment_header_id = rsl.shipment_header_id
+         AND rt.po_header_id = rsl.po_header_id
+         AND rt.po_line_id = rsl.po_line_id
+         AND rt.po_line_location_id = rsl.po_line_location_id
+ORDER BY rt.creation_date DESC;
+
