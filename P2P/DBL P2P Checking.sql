@@ -1,4 +1,4 @@
-/* Formatted on 1/9/2022 9:47:21 AM (QP5 v5.374) */
+/* Formatted on 1/11/2022 12:34:10 PM (QP5 v5.374) */
   SELECT                                                            --DISTINCT
          ------------------------------------------------------Organization Info
          NVL (prh.org_id, pha.org_id)
@@ -104,6 +104,7 @@
          aia.invoice_num
              invoice_number,
          aia.invoice_id,
+         aia.doc_sequence_value vouchar_no,
          aia.invoice_currency_code
              inv_currency_code,
          aia.invoice_amount,
@@ -226,23 +227,16 @@
          AND aia.invoice_id = aipa.invoice_id(+)
          AND aipa.reversal_flag(+) = 'N'
          AND ( :p_ou_name IS NULL OR (hou.name = :p_ou_name))
-         AND (   ( :p_org_id IS NULL)
-              OR (NVL (prh.org_id, pha.org_id) = :p_org_id))
+         AND (   ( :p_org_id IS NULL) OR (NVL (prh.org_id, pha.org_id) = :p_org_id))
+         AND ood.organization_code = NVL ( :p_org_code, ood.organization_code)
          AND ( :p_req_no IS NULL OR (prh.segment1 = :p_req_no))
          AND ( :p_po_no IS NULL OR (pha.segment1 = :p_po_no))
          AND ( :p_grn_no IS NULL OR (rsh.receipt_num = :p_grn_no))
          AND ( :p_invoice_num IS NULL OR (aia.invoice_num = :p_invoice_num))
          AND ( :p_item_code IS NULL OR (msib.segment1 = :p_item_code))
-         AND (   :p_item_desc IS NULL
-              OR (UPPER (msib.description) LIKE
-                      UPPER ('%' || :p_item_desc || '%')))
-         AND prl.destination_organization_id =
-             NVL ( :p_dest_org_id, prl.destination_organization_id)
-         AND prh.authorization_status =
-             NVL ( :p_authorization_status, prh.authorization_status)
-         AND (   :p_from_creation_date IS NULL
-              OR TRUNC (prh.creation_date) BETWEEN :p_from_creation_date
-                                               AND :p_to_creation_date)
+         AND (   :p_item_desc IS NULL OR (UPPER (msib.description) LIKE UPPER ('%' || :p_item_desc || '%')))
+         AND prh.authorization_status = NVL ( :p_po_status, prh.authorization_status)
+         AND TRUNC (prh.creation_date) BETWEEN NVL ( :p_date_from, TRUNC ( prh.creation_date)) AND NVL ( :p_ate_to, TRUNC ( prh.creation_date))
 ORDER BY NVL (prh.org_id, pha.org_id),
          prh.segment1,
          prl.line_num,

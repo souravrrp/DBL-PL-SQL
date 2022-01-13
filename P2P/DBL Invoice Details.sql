@@ -69,13 +69,13 @@ where 1=1
     AND ai.invoice_id=aipa.invoice_id(+)
     and ai.doc_sequence_value in (218001791)
     --and ai.invoice_id=15322
---    and pha.segment1 in ('I/RMCOU/000044')
---    and ail.rcv_transaction_id in (2218055)
+    --and pha.segment1 in ('I/RMCOU/000044')
+    --and ail.rcv_transaction_id in (2218055)
     and ai.org_id in (107)
     --and aps.segment1 in ('15015')
---    and aid.period_name in ('JAN-19')
---    and pha.attribute1 in ('I')
---    and gcc.segment3 in ('1050102','2050107')
+    --and aid.period_name in ('JAN-19')
+    --and pha.attribute1 in ('I')
+    --and gcc.segment3 in ('1050102','2050107')
     and ai.org_id =  hou.organization_id
     and ai.vendor_id = aps.vendor_id
     and ai.vendor_site_id = apss.vendor_site_id
@@ -86,10 +86,10 @@ where 1=1
     and ail.rcv_transaction_id = rt.transaction_id(+)
     and ail.rcv_shipment_line_id = rsl.shipment_line_id(+)
     and rsl.shipment_header_id = rsh.shipment_header_id(+)
---    and ail.inventory_item_id = msi.inventory_item_id(+)
+    --and ail.inventory_item_id = msi.inventory_item_id(+)
     and pla.item_id = msi.inventory_item_id(+)
     and rsh.ship_to_org_id = msi.organization_id(+)
---    and rt.organization_id = ood.organization_id(+)
+    --and rt.organization_id = ood.organization_id(+)
     and pda.destination_organization_id = ood.organization_id(+)
     and ai.invoice_id = aid.invoice_id
     and ai.org_id = aid.org_id
@@ -109,6 +109,3 @@ order by
     ,ail.line_number
     ,aid.distribution_line_number
     ;
-
-
-select * from apps.ap_invoice_lines_all
