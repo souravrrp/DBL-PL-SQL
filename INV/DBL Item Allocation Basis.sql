@@ -77,7 +77,7 @@ SELECT alloc_code, concatenated_segments
   FROM gl_aloc_bas a, apps.mtl_system_items_kfv b, gl_aloc_mst c
  WHERE     a.inventory_item_id = b.inventory_item_id
        AND a.organization_id = b.organization_id
-       AND (   ( :p_organization_id IS NULL AND a.organization_id IN (152))
+       AND (   ( :p_organization_id IS NULL AND a.organization_id IN (150))
             OR (a.organization_id = :p_organization_id))
        AND a.alloc_id = c.alloc_id
        AND ( :p_alloc_code IS NULL OR (alloc_code = UPPER ( :p_alloc_code)))

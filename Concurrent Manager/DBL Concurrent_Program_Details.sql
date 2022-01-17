@@ -9,7 +9,7 @@ SELECT --DISTINCT
        fdfcuv.column_seq_num                          "Column Seq Number",
        fdfcuv.end_user_column_name                    "Parameter Name",
        fdfcuv.form_left_prompt                        "Prompt",
-       fdfcuv.enabled_flag                            " Enabled Flag",
+       fdfcuv.enabled_flag                            "Enabled Flag",
        fdfcuv.required_flag                           "Required Flag",
        fdfcuv.display_flag                            "Display Flag",
        fdfcuv.flex_value_set_id                       "Value Set Id",
@@ -33,9 +33,9 @@ SELECT --DISTINCT
        AND fcp.enabled_flag = 'Y'
        AND fcp.application_id = fav.application_id(+)
        AND (   :p_concurrent_program_name IS NULL OR (UPPER (fcpl.user_concurrent_program_name) LIKE UPPER ('%' || :p_concurrent_program_name || '%')))
-       and ( ( :p_executable_name is null) or (upper (decode(fl.meaning,'Oracle Reports',fe.execution_file_name,fcp.concurrent_program_name)) like upper ('%' || :p_executable_name || '%')))
+       AND ( ( :p_executable_name is null) or (UPPER (DECODE(fl.meaning,'Oracle Reports',fe.execution_file_name,fcp.concurrent_program_name)) like UPPER ('%' || :p_executable_name || '%')))
        --AND fe.execution_file_name =NVL(:P_EXECUTABLE_NAME,fe.execution_file_name)
-       --AND fcpl.user_concurrent_program_name LIKE '%AKG List of DOs Paid Bill by Pay Date%' --<Your Concurrent Program Name>
+       --AND fcpl.user_concurrent_program_name LIKE '%Your Concurrent Program Name%'
        AND '$SRS$.' || fcp.concurrent_program_name = fdfcuv.descriptive_flexfield_name(+)
        AND fdfcuv.flex_value_set_id = ffvs.flex_value_set_id(+)
        AND flv.lookup_type(+) = 'FLEX_DEFAULT_TYPE'

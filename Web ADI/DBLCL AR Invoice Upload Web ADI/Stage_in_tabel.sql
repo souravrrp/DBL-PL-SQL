@@ -68,9 +68,6 @@ DROP TABLE APPS.xxdbl_cer_ar_inv_upld_stg CASCADE CONSTRAINTS;
 
 ALTER TABLE xxdbl.xxdbl_cer_ar_inv_upld_stg
    RENAME COLUMN organization_code TO organization_id;
-   
-   ALTER TABLE xxdbl.xxdbl_cer_ar_inv_upld_stg
-    ADD (GL_ID_REV NUMBER);
 
 SELECT                                                                --SL_NO,
        --       ORGANIZATION_CODE,
