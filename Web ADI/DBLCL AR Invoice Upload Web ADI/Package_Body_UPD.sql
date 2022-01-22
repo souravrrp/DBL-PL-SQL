@@ -84,7 +84,7 @@ IS
                 l_trx_dist_tbl (1).trx_header_id := ra_customer_trx_s.NEXTVAL;
                 l_trx_dist_tbl (1).trx_LINE_ID :=
                     ra_customer_trx_lines_s.NEXTVAL;
-                l_trx_dist_tbl (1).ACCOUNT_CLASS := 'REV';
+                --l_trx_dist_tbl (1).ACCOUNT_CLASS := 'REV';
                 l_trx_dist_tbl (1).AMOUNT := ln_cur_stg.AMOUNT;         --150;
                 l_trx_dist_tbl (1).CODE_COMBINATION_ID :=
                     ln_cur_stg.GL_ID_REV;                            --195346;

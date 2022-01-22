@@ -1,4 +1,4 @@
-/* Formatted on 1/20/2022 2:49:05 PM (QP5 v5.374) */
+/* Formatted on 12/23/2021 12:38:58 PM (QP5 v5.374) */
   SELECT ORGANIZATION_CODE,
          ORGANIZATION_NAME,
          OPERATING_UNIT,
@@ -113,14 +113,12 @@
                             (SELECT NVL (MAX (TRUNC (A.TRANSACTION_DATE)),
                                          '30-SEP-2017')
                                FROM INV.MTL_MATERIAL_TRANSACTIONS A
-                              WHERE     TRANSACTION_TYPE_ID IN (35,
-                                                                31,
-                                                                32,
-                                                                33)
+                              WHERE     TRANSACTION_TYPE_ID IN (35, 31, 32, 33)
                                     AND A.INVENTORY_ITEM_ID =
                                         MMT.INVENTORY_ITEM_ID
                                     AND A.ORGANIZATION_ID = MMT.ORGANIZATION_ID
-                                    --AND A.SUBINVENTORY_CODE = MMT.SUBINVENTORY_CODE
+                                    AND A.SUBINVENTORY_CODE =
+                                        MMT.SUBINVENTORY_CODE
                                     AND TRUNC (A.TRANSACTION_DATE) <=
                                         :P_TO_DATE + .99999)
                         ELSE
@@ -254,8 +252,10 @@
                        AS UOM,
                    MSI.SECONDARY_UOM_CODE
                        AS S_UOM,
-                   LOT.LOT_NUMBER,
-                   LOT.EXPIRY_DATE,
+                   NULL
+                       LOT_NUMBER,
+                   NULL
+                       EXPIRY_DATE,
                    (SELECT NVL (MAX (TRUNC (A.TRANSACTION_DATE)), '30-SEP-2017')
                       FROM INV.MTL_MATERIAL_TRANSACTIONS A
                      WHERE     A.INVENTORY_ITEM_ID = MMT.INVENTORY_ITEM_ID
@@ -279,8 +279,7 @@
                        AS LAST_RECEIVE_DATE,
                    (SELECT NVL (MAX (TRUNC (A.TRANSACTION_DATE)), '30-SEP-2017')
                       FROM INV.MTL_MATERIAL_TRANSACTIONS A
-                     WHERE     TRANSACTION_TYPE_ID <> 2
-                           AND SIGN (PRIMARY_QUANTITY) = -1
+                     WHERE     TRANSACTION_TYPE_ID = 63
                            AND A.INVENTORY_ITEM_ID = MMT.INVENTORY_ITEM_ID
                            AND A.ORGANIZATION_ID = MMT.ORGANIZATION_ID
                            AND A.SUBINVENTORY_CODE = MMT.SUBINVENTORY_CODE)
@@ -317,35 +316,13 @@
                    APPS.MTL_SYSTEM_ITEMS_B_KFV    MSI,
                    APPS.MTL_ITEM_CATEGORIES_V     MIC,
                    APPS.ORG_ORGANIZATION_DEFINITIONS OOD,
-                   INV.MTL_PARAMETERS             MP,
-                   (SELECT MTLN.TRANSACTION_ID,
-                           MTLN.INVENTORY_ITEM_ID,
-                           MTLN.ORGANIZATION_ID,
-                           MTL.LOT_NUMBER,
-                           TO_CHAR (
-                               DECODE (
-                                   MTL.ATTRIBUTE_CATEGORY,
-                                   'Dyes and Chemical Information', TO_TIMESTAMP (
-                                                                        MTL.ATTRIBUTE2,
-                                                                        'YYYY-MM-DD:HH24:MI:SS'),
-                                   NULL),
-                               'YYYY/MM/DD')               EXPIRY_DATE,
-                           TRUNC (MTL.ORIGINATION_DATE)    ORIGINATION_DATE,
-                           MTLN.PRIMARY_QUANTITY           PRIMARY_QUANTITY
-                      FROM APPS.MTL_TRANSACTION_LOT_NUMBERS MTLN,
-                           APPS.MTL_LOT_NUMBERS          MTL
-                     WHERE     MTLN.INVENTORY_ITEM_ID = MTL.INVENTORY_ITEM_ID
-                           AND MTLN.ORGANIZATION_ID = MTL.ORGANIZATION_ID
-                           AND MTLN.LOT_NUMBER = MTL.LOT_NUMBER) LOT
+                   INV.MTL_PARAMETERS             MP
              WHERE     MMT.INVENTORY_ITEM_ID = MSI.INVENTORY_ITEM_ID
                    AND MMT.ORGANIZATION_ID = MSI.ORGANIZATION_ID
                    AND MSI.INVENTORY_ITEM_ID = MIC.INVENTORY_ITEM_ID
                    AND MSI.ORGANIZATION_ID = MIC.ORGANIZATION_ID
                    AND MMT.ORGANIZATION_ID = OOD.ORGANIZATION_ID
                    AND MP.ORGANIZATION_ID = OOD.ORGANIZATION_ID
-                   AND LOT.TRANSACTION_ID(+) = MMT.TRANSACTION_ID
-                   AND MMT.INVENTORY_ITEM_ID = LOT.INVENTORY_ITEM_ID(+)
-                   AND MMT.ORGANIZATION_ID = LOT.ORGANIZATION_ID(+)
                    AND MIC.CATEGORY_SET_ID = 1
                    AND PROCESS_ENABLED_FLAG = 'N'
                    AND MMT.TRANSACTION_TYPE_ID <> 80
@@ -372,8 +349,6 @@
                    MIC.SEGMENT2,
                    MIC.SEGMENT3,
                    MSI.PRIMARY_UOM_CODE,
-                   LOT.LOT_NUMBER,
-                   LOT.EXPIRY_DATE,
                    MSI.SECONDARY_UOM_CODE
             HAVING SUM (MMT.PRIMARY_QUANTITY) <> 0)
 GROUP BY ORGANIZATION_CODE,

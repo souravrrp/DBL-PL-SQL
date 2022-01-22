@@ -5,7 +5,15 @@ SELECT
    WHERE 1 = 1
    AND operating_unit=126
    --AND FLAG IS NULL
-   order by creation_date desc
+   --order by creation_date desc
+   ;
+   
+   update
+   xxdbl_cer_ar_inv_upld_stg STG
+   SET FLAG=null
+   WHERE 1=1
+   AND SL_NO=1
+   --AND FLAG IS NULL
    ;
 
 

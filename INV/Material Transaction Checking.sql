@@ -56,7 +56,8 @@ SELECT mmt.transaction_id,
        AND msi.organization_id = cat.organization_id
        AND (   :p_major_category IS NULL    OR (cat.segment2 = :p_major_category))
        AND (   :p_minor_category IS NULL    OR (cat.segment3 = :p_minor_category))
-       AND cat.category_set_id=1 ;
+       AND cat.category_set_id=1 
+    ORDER BY mmt.transaction_id DESC;
 
 --------------------------------------------------------------------------------
 
