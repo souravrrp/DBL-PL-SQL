@@ -1,4 +1,4 @@
-/* Formatted on 1/24/2022 3:55:12 PM (QP5 v5.374) */
+/* Formatted on 1/24/2022 3:55:08 PM (QP5 v5.374) */
 SELECT ledger_name,
        legal_entity_name,
        org_id,
@@ -7,7 +7,6 @@ SELECT ledger_name,
        organization_name,
        item_category,
        item_type,
-       item_id,
        item_code,
        item_name,
        uom,
@@ -31,23 +30,12 @@ SELECT ledger_name,
             ELSE
                 NVL (po_quantity, 0)
         END)                        po_quantity,
-       NVL (grn_quantity, 0)        grn,
-       grn_quantity,
-       quarantine_qty,
-       --NVL ((grn_quantity - quarantine_qty), 0) pending_grn,
-       --NVL((NVL (grn_quantity, 0)-NVL (quarantine_qty, 0)),0) pending_grn,
        NVL (
            (  (NVL (grn_quantity, 0) - NVL (quarantine_qty, 0))
             - ((  NVL (onhand_quantity, 0)
                 - (NVL (quarantine_qty, 0) + NVL (reserve_quantity, 0))
                 + NVL (reserve_quantity, 0)))),
            0)                       grn_quantity,
-       NVL (
-           (  NVL (grn_quantity, 0)
-            - (  NVL (quarantine_qty, 0)
-               + NVL (onhand_quantity, 0)
-               + NVL (reserve_quantity, 0))),
-           0)                       grn_qty,
        NVL (quarantine_qty, 0)      quarantine_qty,
        NVL (
            (  NVL (onhand_quantity, 0)
@@ -65,8 +53,6 @@ SELECT ledger_name,
                      item_category,
                  cat.segment2
                      item_type,
-                 msi.inventory_item_id
-                     item_id,
                  msi.segment1
                      item_code,
                  msi.description
@@ -164,18 +150,10 @@ SELECT ledger_name,
                  apps.xxdbl_company_le_mapping_v  ou,
                  apps.org_organization_definitions ood
            WHERE     1 = 1
-                 AND (   :p_org_code IS NULL
-                      OR (ood.organization_code = :p_org_code))
+                 AND ood.organization_code = '301'
                  AND ( :p_item_code IS NULL OR (msi.segment1 = :p_item_code))
                  AND (   :p_item_category IS NULL
                       OR (cat.segment1 = :p_item_category))
-                 -----------------------------------------------------------------------
-                 --AND (   :p_date IS NULL OR (TRUNC (pha.approved_date) <= TRUNC ( :p_date)))
-                 --AND ( :p_org_id IS NULL OR (pha.org_id = :p_org_id))
-                 --AND ( :p_po_no IS NULL OR (pha.segment1 = :p_po_no))
-                 --AND ( :p_req_no IS NULL OR (prha.segment1 = :p_req_no))
-                 --AND ( :p_item_type IS NULL OR (mc.segment2 = :p_item_type))
-                 -----------------------------------------------------------------------
                  AND ood.organization_id = msi.organization_id(+)
                  AND msi.inventory_item_id = cat.inventory_item_id(+)
                  AND msi.organization_id = cat.organization_id(+)
@@ -190,7 +168,6 @@ SELECT ledger_name,
                  ood.organization_name,
                  cat.segment1,
                  cat.segment2,
-                 msi.inventory_item_id,
                  msi.segment1,
                  msi.description,
                  msi.primary_uom_code,

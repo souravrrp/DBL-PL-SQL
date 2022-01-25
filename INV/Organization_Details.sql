@@ -23,7 +23,7 @@
     FROM hr_operating_units          hou,
          org_organization_definitions ood,
          xxdbl_company_le_mapping_v  ou,
-         --,apps.mtl_secondary_inventories msi,
+         --,inv.mtl_secondary_inventories msi,
          inv.mtl_parameters pm
    WHERE     1 = 1
          AND hou.organization_id = ood.operating_unit

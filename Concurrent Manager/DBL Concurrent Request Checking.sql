@@ -35,11 +35,11 @@
          --and argument_text LIKE '%'
          --and requestor not in ('SYSADMIN','INVADMIN')
          --and request_id = 9686914
-         --and fcrs.actual_start_date < sysdate
+         --and fcrs.actual_start_date < SYSDATE
          --and fcrs.phase_code = 'R'
          --and fcrs.status_code not in ('P','D','Q','C','R')
-         --and trunc(fcrs.actual_start_date) =trunc(sysdate)
-         --and trunc(fcrs.actual_completion_date) = trunc(sysdate)
+         --and trunc(fcrs.actual_start_date) =trunc(SYSDATE)
+         --and trunc(fcrs.actual_completion_date) = trunc(SYSDATE)
          AND frt.language = 'US'
          AND fcrs.responsibility_id = frt.responsibility_id
 ORDER BY fcrs.actual_start_date DESC, fcrs.requestor ASC;
