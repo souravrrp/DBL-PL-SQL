@@ -6,11 +6,11 @@ SELECT *
        AND xces.catalog_group = NVL ( :p_catalog_group, xces.catalog_group);
 
 
---UPDATE xxdbl.xxdbl_catalog_elem_serial SET LAST_SERIAL = '3542' WHERE 1 = 1 AND CATALOG_GROUP = 'Fixed Asset';
+--UPDATE xxdbl.xxdbl_catalog_elem_serial SET LAST_SERIAL = '3544' WHERE 1 = 1 AND CATALOG_GROUP = 'Fixed Asset';
 
 --UPDATE xxdbl.xxdbl_catalog_elem_serial SET LAST_SERIAL = '679' WHERE 1 = 1 AND CATALOG_GROUP = 'Distribution Trading Item';
 
---UPDATE xxdbl.xxdbl_catalog_elem_serial SET LAST_SERIAL = '90655' WHERE 1 = 1 AND CATALOG_GROUP = 'Spare Consumable Others';
+--UPDATE xxdbl.xxdbl_catalog_elem_serial SET LAST_SERIAL = '90726' WHERE 1 = 1 AND CATALOG_GROUP = 'Spare Consumable Others';
 
 
 
