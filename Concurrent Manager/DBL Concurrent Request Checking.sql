@@ -30,16 +30,16 @@
          AND trunc(fcrs.actual_start_date) between nvl(:p_report_date_from,trunc(fcrs.actual_start_date)) and nvl(:p_report_date_to,trunc(fcrs.actual_start_date))
          and ( ( :p_parameter is null) or (upper (fcrs.argument_text) like upper ('%' || :p_parameter || '%')))
          --AND frt.zd_edition_name =  NVL('SET1','SET2')
-         AND frt.zd_edition_name =  DECODE(frt.zd_edition_name,'SET1','SET2','SET2')
+         AND NVL(frt.zd_edition_name,'SET2') =  DECODE(frt.zd_edition_name,'SET1','SET2','SET2')
          --AND user_concurrent_program_name IN( 'DBL Discrete Inventory Store Ledger')
-         --and argument_text LIKE '%'
-         --and requestor not in ('SYSADMIN','INVADMIN')
-         --and request_id = 9686914
-         --and fcrs.actual_start_date < SYSDATE
-         --and fcrs.phase_code = 'R'
-         --and fcrs.status_code not in ('P','D','Q','C','R')
-         --and trunc(fcrs.actual_start_date) =trunc(SYSDATE)
-         --and trunc(fcrs.actual_completion_date) = trunc(SYSDATE)
+         --AND argument_text LIKE '%'
+         --AND requestor not in ('SYSADMIN','INVADMIN')
+         --AND request_id = 9686914
+         --AND fcrs.actual_start_date < SYSDATE
+         --AND fcrs.phase_code = 'R'
+         --AND fcrs.status_code not in ('P','D','Q','C','R')
+         --AND trunc(fcrs.actual_start_date) =trunc(SYSDATE)
+         --AND trunc(fcrs.actual_completion_date) = trunc(SYSDATE)
          AND frt.language = 'US'
          AND fcrs.responsibility_id = frt.responsibility_id
 ORDER BY fcrs.actual_start_date DESC, fcrs.requestor ASC;

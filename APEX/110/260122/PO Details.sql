@@ -1,0 +1,20 @@
+/* Formatted on 1/30/2022 11:55:30 AM (QP5 v5.374) */
+SELECT PHA.SEGMENT1               AS DISPLAY_VALUE,
+       PHA.SEGMENT1               AS RETURN_VALUE,
+       OU.COMPANY_CODE,
+       OU.UNIT_NAME               OU_NAME,
+       PV.VENDOR_NAME             SUPPLIER_NAME,
+       PV.SEGMENT1                SUPPLIER_CODE,
+       PHA.TYPE_LOOKUP_CODE       PURCHASING_GROUP,
+       TO_CHAR (LC.LC_NUMBER)     LC_NO
+  FROM PO.PO_HEADERS_ALL                PHA,
+       XXDBL.XX_LC_DETAILS              LC,
+       APPS.AP_SUPPLIERS                PV,
+       APPS.XXDBL_COMPANY_LE_MAPPING_V  OU
+ WHERE     1 = 1
+       AND PHA.PO_HEADER_ID = LC.PO_HEADER_ID
+       --AND PHA.ORG_ID = :P3_UNIT_NAME
+       AND PHA.SEGMENT1 = :P_PO_NUMBER
+       AND PHA.SEGMENT1 = LC.PO_NUMBER
+       AND PHA.ORG_ID = OU.ORG_ID
+       AND PHA.VENDOR_ID = PV.VENDOR_ID;
