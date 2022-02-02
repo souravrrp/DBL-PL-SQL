@@ -1,4 +1,4 @@
-/* Formatted on 1/24/2022 3:55:08 PM (QP5 v5.374) */
+/* Formatted on 2/1/2022 4:17:22 PM (QP5 v5.374) */
 SELECT ledger_name,
        legal_entity_name,
        org_id,
@@ -22,26 +22,27 @@ SELECT ledger_name,
                 - (NVL (po_quantity, 0) + NVL (grn_quantity, 0))
             ELSE
                 NVL (pr_quantity, 0)
-        END)                        pr_quantity,
+        END)                              pr_quantity,
        (CASE
             WHEN NVL (po_quantity, 0) > NVL (grn_quantity, 0)
             THEN
                 NVL (po_quantity, 0) - NVL (grn_quantity, 0)
             ELSE
                 NVL (po_quantity, 0)
-        END)                        po_quantity,
+        END)                              po_quantity,
        NVL (
            (  (NVL (grn_quantity, 0) - NVL (quarantine_qty, 0))
             - ((  NVL (onhand_quantity, 0)
                 - (NVL (quarantine_qty, 0) + NVL (reserve_quantity, 0))
                 + NVL (reserve_quantity, 0)))),
-           0)                       grn_quantity,
-       NVL (quarantine_qty, 0)      quarantine_qty,
+           0)                             grn_quantity,
+       NVL (quarantine_qty, 0)            quarantine_qty,
        NVL (
            (  NVL (onhand_quantity, 0)
             - (NVL (quarantine_qty, 0) + NVL (reserve_quantity, 0))),
-           0)                       onhand_quantity,
-       NVL (reserve_quantity, 0)    reserve_quantity
+           0)                             onhand_quantity,
+       NVL (reserve_quantity, 0)          reserve_quantity,
+       (onhand_quantity - sf_quantity)    shop_floor_qty
   FROM (  SELECT ou.ledger_name,
                  ou.legal_entity_name,
                  ood.operating_unit
@@ -143,7 +144,16 @@ SELECT ledger_name,
                     FROM inv.mtl_reservations mr
                    WHERE     mr.organization_id = msi.organization_id
                          AND mr.inventory_item_id = msi.inventory_item_id)
-                     reserve_quantity
+                     reserve_quantity,
+                 NVL (
+                     (SELECT SUM (ohqd.primary_transaction_quantity)
+                        FROM apps.mtl_onhand_quantities_detail ohqd
+                       WHERE     1 = 1
+                             AND ohqd.organization_id = msi.organization_id
+                             AND ohqd.subinventory_code LIKE 'SF%'
+                             AND ohqd.inventory_item_id = msi.inventory_item_id),
+                     0)
+                     sf_quantity
             FROM inv.mtl_system_items_b           msi,
                  apps.mtl_item_categories_v       cat,
                  apps.hr_operating_units          hou,
