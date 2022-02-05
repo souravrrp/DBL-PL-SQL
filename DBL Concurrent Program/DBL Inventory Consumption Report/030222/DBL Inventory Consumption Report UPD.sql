@@ -1,4 +1,4 @@
-/* Formatted on 2/3/2022 9:19:28 AM (QP5 v5.374) */
+/* Formatted on 2/3/2022 2:25:15 PM (QP5 v5.374) */
 WITH
     MAIN
     AS
@@ -75,6 +75,7 @@ WITH
                 APPS.XX_COM_PKG.GET_DEPT_FROM_USER_NAME_ID (NULL,
                                                             ICRM.CREATED_BY)
                     DEPARTMENT,
+                ASSET,
                 (SELECT DESCRIPTION
                    FROM FA_ADDITIONS
                   WHERE     ASSET_NUMBER = ICRM.ASSET
