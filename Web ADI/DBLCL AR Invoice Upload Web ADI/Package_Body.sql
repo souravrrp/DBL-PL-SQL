@@ -1,172 +1,303 @@
-/* Formatted on 5/30/2021 4:05:45 PM (QP5 v5.287) */
-CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_cer_ar_inv_upld_pkg
+/* Formatted on 4/1/2021 12:24:42 PM (QP5 v5.287) */
+CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_cer_ar_intf_upld_pkg
 IS
    FUNCTION check_error_log_to_import_data
       RETURN NUMBER
    IS
-      l_return_status          VARCHAR2 (1);
-      l_msg_count              NUMBER;
-      l_msg_data               VARCHAR2 (2000);
-      l_batch_id               NUMBER;
-      l_batch_source_rec       ar_invoice_api_pub.batch_source_rec_type;
-      l_trx_header_tbl         ar_invoice_api_pub.trx_header_tbl_type;
-      l_trx_lines_tbl          ar_invoice_api_pub.trx_line_tbl_type;
-      l_trx_dist_tbl           ar_invoice_api_pub.trx_dist_tbl_type;
-      l_trx_salescredits_tbl   ar_invoice_api_pub.trx_salescredits_tbl_type;
-      l_trx_created            NUMBER;
-      l_cnt                    NUMBER;
-
-      CURSOR cbatch
-      IS
-         SELECT customer_trx_id
-           FROM ra_customer_trx_all
-          WHERE batch_id = l_batch_id;
-
-      CURSOR list_errors
-      IS
-         SELECT trx_header_id,
-                trx_line_id,
-                trx_salescredit_id,
-                trx_dist_id,
-                trx_contingency_id,
-                error_message,
-                invalid_value
-           FROM ar_trx_errors_gt;
+      L_RETURN_STATUS   VARCHAR2 (1);
 
       CURSOR cur_stg
       IS
          SELECT *
-           FROM apps.xxdbl_cer_ar_inv_upld_stg
-          WHERE FLAG IS NULL AND OPERATING_UNIT = 126;
+           FROM apps.xxdbl_cer_ra_interface_stg
+          WHERE FLAG IS NULL;
    BEGIN
       FOR ln_cur_stg IN cur_stg
       LOOP
          BEGIN
-            -- c. Set the applications context
-            mo_global.init ('AR');
-            mo_global.set_policy_context ('S', ln_cur_stg.OPERATING_UNIT);
-            fnd_global.apps_initialize (p_user_id,
-                                        p_responsibility_id,
-                                        p_respappl_id,
-                                        0);
-            --mo_global.set_policy_context ('S', '126');
-            --fnd_global.apps_initialize (5958,  51915, 222, 0);
+            /*
+               INSERT
+                 INTO ra_interface_lines_all (interface_line_id,
+                                              batch_source_name,
+                                              line_number,
+                                              line_type,
+                                              cust_trx_type_name,
+                                              cust_trx_type_id,
+                                              trx_date,
+                                              gl_date,
+                                              currency_code,
+                                              term_id,
+                                              orig_system_bill_customer_id,
+                                              orig_system_bill_customer_ref,
+                                              orig_system_bill_address_id,
+                                              orig_system_bill_address_ref,
+                                              orig_system_ship_customer_id,
+                                              orig_system_ship_address_id,
+                                              orig_system_sold_customer_id,
+                                              sales_order,
+                                              inventory_item_id,
+                                              uom_code,
+                                              quantity,
+                                              quantity_ordered,
+                                              unit_selling_price,
+                                              amount,
+                                              description,
+                                              conversion_type,
+                                              conversion_date,
+                                              conversion_rate,
+                                              interface_line_context,
+                                              interface_line_attribute1,
+                                              interface_line_attribute2,
+                                              org_id,
+                                              warehouse_id,
+                                              set_of_books_id,
+                                              fob_point,
+                                              last_update_date,
+                                              last_updated_by,
+                                              creation_date,
+                                              created_by,
+                                              ship_via,
+                                              primary_salesrep_id,
+                                              sales_order_source,
+                                              sales_order_date,
+                                              sales_order_line,
+                                              ship_date_actual,
+                                              unit_standard_price,
+                                              interface_status,
+                                              territory_id,
+                                              territory_segment1,
+                                              territory_segment2,
+                                              territory_segment3,
+                                              territory_segment4 --invoicing_rule_id,
+                                                                --accounting_rule_id,
+                                                                --accounting_rule_duration
+                                              )
+               VALUES (ra_customer_trx_lines_s.NEXTVAL,    --> interface_line_id,
+                       ln_cur_stg.batch_source_name,       --> batch_source_name,
+                       ln_cur_stg.line_number,                   --> line_number,
+                       'LINE',                                     --> line_type,
+                       NULL, --ln_cur_stg.trx_type,               --> cust_trx_type_name,
+                       ln_cur_stg.cust_trx_type_id,         --> cust_trx_type_id,
+                       ln_cur_stg.trx_date,                         --> trx_date,
+                       ln_cur_stg.gl_date,                           --> gl_date,
+                       ln_cur_stg.currency_code,               --> currency_code,
+                       ln_cur_stg.term_id,                           --> term_id,
+                       ln_cur_stg.customer_id,  --> orig_system_bill_customer_id,
+                       NULL,                   --> orig_system_bill_customer_ref,
+                       ln_cur_stg.bill_to_site_id, --> orig_system_bill_address_id,
+                       NULL,                    --> orig_system_bill_address_ref,
+                       ln_cur_stg.customer_id,  --> orig_system_ship_customer_id,
+                       ln_cur_stg.ship_to_site_id, --> orig_system_ship_address_id,
+                       ln_cur_stg.customer_id,  --> orig_system_sold_customer_id,
+                       ln_cur_stg.sales_order,                   --> sales_order,
+                       ln_cur_stg.item_id,                 --> inventory_item_id,
+                       ln_cur_stg.uom_code,                         --> uom_code,
+                       ln_cur_stg.quantity,                         --> quantity,
+                       ln_cur_stg.quantity,                         --> quantity,
+                       ln_cur_stg.unit_selling_price,     --> unit_selling_price,
+                       ln_cur_stg.amount,                             --> amount,
+                       'Custom Interface Upload Invoice',        --> description,
+                       ln_cur_stg.exchange_rate_type, --'User',-->conversion_type,
+                       ln_cur_stg.exchange_date,
+                       ln_cur_stg.exchange_rate, --1,        --> conversion_rate,
+                       'ORDER ENTRY',                 --> interface_line_context,
+                       ln_cur_stg.sales_order,     --> interface_line_attribute1,
+                       ln_cur_stg.freight_terms_code, --> interface_line_attribute2,
+                       ln_cur_stg.operating_unit,                     --> org_id,
+                       ln_cur_stg.organization_id,
+                       ln_cur_stg.set_of_books,              --> set_of_books_id,
+                       NULL,                                       --> fob_point,
+                       SYSDATE,                             --> last_update_date,
+                       p_user_id,     -- fnd_global.user_id, --> last_updated_by,
+                       SYSDATE,                                --> creation_date,
+                       p_user_id,           -- fnd_global.user_id --> created_by,
+                       ln_cur_stg.freight_carrier_code,
+                       ln_cur_stg.salesrep_id,
+                       'ORDER ENTRY',
+                       ln_cur_stg.order_date,
+                       ln_cur_stg.ord_line_number,
+                       NVL (ln_cur_stg.actual_ship_date, ln_cur_stg.trx_date), --> ship_date_actual,
+                       ln_cur_stg.unit_list_price,
+                       NULL,                                               --'P',
+                       ln_cur_stg.territory_id,
+                       ln_cur_stg.t_segment1,
+                       ln_cur_stg.t_segment2,
+                       ln_cur_stg.t_segment3,
+                       ln_cur_stg.t_segment4                              --1000,
+                                                                             --1,
+                                                                           --NULL
+                       );
+                       */
 
-            -- d. Populate batch source information.
-            l_batch_source_rec.batch_source_id := ln_cur_stg.BATCH_SOURCE_ID;
 
-            -- e. Populate header information for first invoice
-            l_trx_header_tbl (1).trx_header_id := ra_customer_trx_s.NEXTVAL;
-            l_trx_header_tbl (1).bill_to_customer_id := ln_cur_stg.CUSTOMER_ID;
-            l_trx_header_tbl (1).cust_trx_type_id :=
-               ln_cur_stg.CUST_TRX_TYPE_ID;
+            INSERT
+              INTO ra_interface_lines_all (interface_line_id,
+                                           batch_source_name,
+                                           line_number,
+                                           line_type,
+                                           cust_trx_type_name,
+                                           cust_trx_type_id,
+                                           trx_date,
+                                           gl_date,
+                                           currency_code,
+                                           term_id,
+                                           orig_system_bill_customer_id,
+                                           orig_system_bill_customer_ref,
+                                           orig_system_bill_address_id,
+                                           orig_system_bill_address_ref,
+                                           orig_system_ship_customer_id,
+                                           orig_system_ship_address_id,
+                                           orig_system_sold_customer_id,
+                                           -- sales_order,
+                                           --inventory_item_id,
+                                           uom_code,
+                                           quantity,
+                                           unit_selling_price,
+                                           amount,
+                                           description,
+                                           conversion_type,
+                                           conversion_rate,
+                                           interface_line_context,
+                                           interface_line_attribute1,
+                                           interface_line_attribute2,
+                                           interface_line_attribute3,
+                                           interface_line_attribute4,
+                                           interface_line_attribute5,
+                                           org_id,
+                                           set_of_books_id,
+                                           fob_point,
+                                           last_update_date,
+                                           last_updated_by,
+                                           creation_date,
+                                           created_by,
+                                           taxable_flag,
+                                           amount_includes_tax_flag,
+                                           territory_id,
+                                           territory_segment1,
+                                           territory_segment2,
+                                           territory_segment3,
+                                           territory_segment4              --,
+                                                             --invoicing_rule_id,
+                                                             --accounting_rule_id,
+                                                             --accounting_rule_duration
+                                           )
+            VALUES (ra_customer_trx_lines_s.NEXTVAL,    --> interface_line_id,
+                    ln_cur_stg.BATCH_SOURCE_NAME,       --> batch_source_name,
+                    ln_cur_stg.LINE_NUMBER,                   --> line_number,
+                    'LINE',                                     --> line_type,
+                    NULL, --ln_cur_stg.TRX_TYPE,               --> cust_trx_type_name,
+                    ln_cur_stg.CUST_TRX_TYPE_ID,         --> cust_trx_type_id,
+                    ln_cur_stg.TRX_DATE,                         --> trx_date,
+                    ln_cur_stg.GL_DATE,                           --> gl_date,
+                    ln_cur_stg.CURRENCY_CODE,               --> currency_code,
+                    ln_cur_stg.TERM_ID,                           --> term_id,
+                    ln_cur_stg.CUSTOMER_ID,  --> orig_system_bill_customer_id,
+                    ln_cur_stg.CUSTOMER_ID, --> orig_system_bill_customer_ref,
+                    ln_cur_stg.BILL_TO_SITE_ID, --> orig_system_bill_address_id,
+                    ln_cur_stg.BILL_TO_SITE_ID, --> orig_system_bill_address_ref,
+                    ln_cur_stg.CUSTOMER_ID,  --> orig_system_ship_customer_id,
+                    ln_cur_stg.SHIP_TO_SITE_ID, --> orig_system_ship_address_id,
+                    ln_cur_stg.CUSTOMER_ID,  --> orig_system_sold_customer_id,
+                    -- 66500,                          --> sales_order,
+                    --2155,                             --> inventory_item_id,
+                    ln_cur_stg.UOM_CODE,                         --> uom_code,
+                    ln_cur_stg.QUANTITY,                         --> quantity,
+                    ln_cur_stg.UNIT_SELLING_PRICE,     --> unit_selling_price,
+                    ln_cur_stg.AMOUNT,                             --> amount,
+                    'Custom Interface Upload Invoice', --ln_cur_stg.ITEM_DESCRIPTION,              --> description,
+                    ln_cur_stg.EXCHANGE_RATE_TYPE,        --> conversion_type,
+                    ln_cur_stg.EXCHANGE_RATE,             --> conversion_rate,
+                    'DBL_IC_INVOICE',              --> interface_line_context,
+                    'XXDBLCL1', --vl_challan_number,          --> interface_line_attribute1,
+                    'XXDBLCL2', --ln_cur_stg.TRX_DATE,        --> interface_line_attribute2,
+                    'XXDBLCL3', --NVL (ln_cur_stg.PI_NUMBER, 'PI-NOT AVAILABLE'), --> interface_line_attribute3,
+                    'XXDBLCL4', --NVL (ln_cur_stg.PO_NUMBER, 'PO-NOT AVAILABLE'), --> interface_line_attribute4,
+                    'XXDBLCL5', --vl_bill_header_id_seq,      --> interface_line_attribute5,
+                    ln_cur_stg.OPERATING_UNIT,                     --> org_id,
+                    ln_cur_stg.SET_OF_BOOKS,              --> set_of_books_id,
+                    NULL,                                       --> fob_point,
+                    SYSDATE,                             --> last_update_date,
+                    0,             -- fnd_global.user_id, --> last_updated_by,
+                    SYSDATE,                                --> creation_date,
+                    0,                   -- fnd_global.user_id --> created_by,
+                    'Y',                                     --> taxable_flag,
+                    'N', --,                         --> amount_includes_tax_flag,
+                    ln_cur_stg.territory_id,
+                    ln_cur_stg.t_segment1,
+                    ln_cur_stg.t_segment2,
+                    ln_cur_stg.t_segment3,
+                    ln_cur_stg.t_segment4 ---2,                                 --> invoicing_rule_id,
+                                         --1,                                 --> accounting_rule_id,
+                                         --NULL                          --> accounting_rule_duration
+                    );
 
-            -- f. Populate lines information for first invoice
-            l_trx_lines_tbl (1).trx_header_id := ra_customer_trx_s.CURRVAL;
-            l_trx_lines_tbl (1).trx_line_id := ra_customer_trx_lines_s.NEXTVAL;
-            l_trx_lines_tbl (1).line_number := 1;
-            l_trx_lines_tbl (1).description :=
-               NVL (ln_cur_stg.ITEM_DESCRIPTION, ln_cur_stg.LINE_DESCRIPTION);
-            l_trx_lines_tbl (1).quantity_invoiced := ln_cur_stg.QUANTITY;
-            l_trx_lines_tbl (1).unit_selling_price :=
-               ln_cur_stg.UNIT_SELLING_PRICE;
-            l_trx_lines_tbl (1).amount := ln_cur_stg.AMOUNT;
-            l_trx_lines_tbl (1).line_type := 'LINE';
+
+            INSERT
+              INTO ra_interface_distributions_all (interface_line_id,
+                                                   account_class,
+                                                   amount,
+                                                   code_combination_id,
+                                                   PERCENT,
+                                                   interface_line_context,
+                                                   interface_line_attribute1,
+                                                   interface_line_attribute2,
+                                                   interface_line_attribute3,
+                                                   interface_line_attribute4,
+                                                   interface_line_attribute5,
+                                                   org_id,
+                                                   last_update_date,
+                                                   last_updated_by,
+                                                   creation_date,
+                                                   created_by)
+            VALUES (ra_customer_trx_lines_s.CURRVAL,     --> interface_line_id
+                    'REV',                                    -->account_class
+                    ln_cur_stg.AMOUNT,                               -->amount
+                    ln_cur_stg.CODE_COMBINATION_ID,     -->code_combination_id
+                    100,                                            -->PERCENT
+                    'DBL_IC_INVOICE',                -->interface_line_context
+                    'XXDBLCL1', --vl_challan_number,          --> interface_line_attribute1,
+                    'XXDBLCL2', --ln_cur_stg.TRX_DATE,        --> interface_line_attribute2,
+                    'XXDBLCL3', --NVL (ln_cur_stg.PI_NUMBER, 'PI-NOT AVAILABLE'), --> interface_line_attribute3,
+                    'XXDBLCL4', --NVL (ln_cur_stg.PO_NUMBER, 'PO-NOT AVAILABLE'), --> interface_line_attribute4,
+                    'XXDBLCL5', --vl_bill_header_id_seq,      --> interface_line_attribute5,
+                    ln_cur_stg.OPERATING_UNIT,                       -->org_id
+                    SYSDATE,                               -->last_update_date
+                    0,                                      -->last_updated_by
+                    SYSDATE,                                  -->creation_date
+                    0                                            -->created_by
+                     );
 
 
+            COMMIT;
 
-            -- Populate Distribution Information
-            l_trx_dist_tbl (1).trx_dist_id :=
-               RA_CUST_TRX_LINE_GL_DIST_S.NEXTVAL;
-            l_trx_dist_tbl (1).trx_header_id := ra_customer_trx_s.NEXTVAL;
-            l_trx_dist_tbl (1).trx_LINE_ID := ra_customer_trx_lines_s.NEXTVAL;
-            l_trx_dist_tbl (1).ACCOUNT_CLASS := 'REV';
-            l_trx_dist_tbl (1).AMOUNT := ln_cur_stg.AMOUNT;             --150;
-            l_trx_dist_tbl (1).CODE_COMBINATION_ID := ln_cur_stg.GL_ID_REV; --195346;
-
-
-
-            -- k. Call the invoice api to create multiple invoices in a batch.
-            AR_INVOICE_API_PUB.create_invoice (
-               p_api_version            => 1.0,
-               p_batch_source_rec       => l_batch_source_rec,
-               p_trx_header_tbl         => l_trx_header_tbl,
-               p_trx_lines_tbl          => l_trx_lines_tbl,
-               p_trx_dist_tbl           => l_trx_dist_tbl,
-               p_trx_salescredits_tbl   => l_trx_salescredits_tbl,
-               x_return_status          => l_return_status,
-               x_msg_count              => l_msg_count,
-               x_msg_data               => l_msg_data);
-
-            -- l. check for errors
-            IF    l_return_status = fnd_api.g_ret_sts_error
-               OR l_return_status = fnd_api.g_ret_sts_unexp_error
+            IF    L_RETURN_STATUS = FND_API.G_RET_STS_ERROR
+               OR L_RETURN_STATUS = FND_API.G_RET_STS_UNEXP_ERROR
             THEN
-               DBMS_OUTPUT.put_line (
-                  'FAILURE: Unexpected errors were raised!');
+               DBMS_OUTPUT.PUT_LINE ('unexpected errors found!');
+               FND_FILE.put_line (
+                  FND_FILE.LOG,
+                  '--------------Unexpected errors found!--------------------');
             ELSE
-               -- m. check batch/invoices created
-               SELECT DISTINCT batch_id
-                 INTO l_batch_id
-                 FROM ar_trx_header_gt;
-
-               IF l_batch_id IS NOT NULL
-               THEN
-                  UPDATE xxdbl_cer_ar_inv_upld_stg
-                     SET FLAG = 'Y'
-                   WHERE SL_NO = ln_cur_stg.SL_NO;
-
-                  DBMS_OUTPUT.put_line (
-                        'SUCCESS: Created batch_id = '
-                     || l_batch_id
-                     || ' containing the following customer_trx_id:');
-
-                  FOR c IN cBatch
-                  LOOP
-                     DBMS_OUTPUT.put_line (' ' || c.customer_trx_id);
-                  END LOOP;
-               END IF;
+               UPDATE apps.xxdbl_cer_ra_interface_stg
+                  SET FLAG = 'Y'
+                WHERE     FLAG IS NULL
+                      AND SL_NO = ln_cur_stg.SL_NO
+                      AND LINE_NUMBER = ln_cur_stg.LINE_NUMBER;
             END IF;
-
-            -- n. Within the batch, check if some invoices raised errors
-            SELECT COUNT (*) INTO l_cnt FROM ar_trx_errors_gt;
-
-            IF l_cnt > 0
+         EXCEPTION
+            WHEN OTHERS
             THEN
-               DBMS_OUTPUT.put_line (
-                  'FAILURE: Errors encountered, see list below:');
-
-               FOR i IN list_errors
-               LOOP
-                  DBMS_OUTPUT.put_line (
-                     '----------------------------------------------------');
-                  DBMS_OUTPUT.put_line (
-                     'Header ID = ' || TO_CHAR (i.trx_header_id));
-                  DBMS_OUTPUT.put_line (
-                     'Line ID = ' || TO_CHAR (i.trx_line_id));
-                  DBMS_OUTPUT.put_line (
-                     'Sales Credit ID = ' || TO_CHAR (i.trx_salescredit_id));
-                  DBMS_OUTPUT.put_line (
-                     'Dist Id = ' || TO_CHAR (i.trx_dist_id));
-                  DBMS_OUTPUT.put_line (
-                     'Contingency ID = ' || TO_CHAR (i.trx_contingency_id));
-                  DBMS_OUTPUT.put_line (
-                     'Message = ' || SUBSTR (i.error_message, 1, 80));
-                  DBMS_OUTPUT.put_line (
-                     'Invalid Value = ' || SUBSTR (i.invalid_value, 1, 80));
-                  DBMS_OUTPUT.put_line (
-                     '----------------------------------------------------');
-               END LOOP;
-            END IF;
+               FND_FILE.put_line (
+                  FND_FILE.LOG,
+                  'Error while inserting records in lines table' || SQLERRM);
          END;
       END LOOP;
 
       RETURN 0;
    END;
 
-
-   PROCEDURE import_data_to_ar_cust_trx (ERRBUF    OUT VARCHAR2,
-                                         RETCODE   OUT VARCHAR2)
+   PROCEDURE import_data_to_ar_interface (ERRBUF    OUT VARCHAR2,
+                                          RETCODE   OUT VARCHAR2)
    IS
       L_Retcode     NUMBER;
       CONC_STATUS   BOOLEAN;
@@ -201,28 +332,30 @@ IS
          errbuf := l_error;
          RETCODE := 1;
          fnd_file.put_line (fnd_file.LOG, 'Status :' || L_Retcode);
-   END import_data_to_ar_cust_trx;
+   END import_data_to_ar_interface;
 
-   PROCEDURE ar_cust_trx_stg_upload (P_SL_NO                 NUMBER,
-                                     P_ORGANIZATION_CODE     VARCHAR2,
-                                     P_BATCH_SOURCE_NAME     VARCHAR2,
-                                     P_TRX_TYPE              VARCHAR2,
-                                     P_CUST_TRX_TYPE         VARCHAR2,
-                                     P_LINE_NUMBER           NUMBER,
-                                     P_TRX_DATE              DATE,
-                                     P_GL_DATE               DATE,
-                                     P_CURRENCY_CODE         VARCHAR2,
-                                     P_CUSTOMER_NUMBER       VARCHAR2,
-                                     P_ITEM_CODE             VARCHAR2,
-                                     P_QUANTITY              NUMBER,
-                                     P_UNIT_SELLING_PRICE    NUMBER,
-                                     P_LINE_DESCRIPTION      VARCHAR2)
+   PROCEDURE upload_data_to_ar_int_stg (P_SL_NO                 NUMBER,
+                                        P_ORGANIZATION_CODE     VARCHAR2,
+                                        P_BATCH_SOURCE_NAME     VARCHAR2,
+                                        P_TRX_TYPE              VARCHAR2,
+                                        P_CUST_TRX_TYPE         VARCHAR2,
+                                        P_LINE_NUMBER           NUMBER,
+                                        P_TRX_DATE              DATE,
+                                        P_GL_DATE               DATE,
+                                        P_CURRENCY_CODE         VARCHAR2,
+                                        P_CUSTOMER_NUMBER       VARCHAR2,
+                                        P_ITEM_CODE             VARCHAR2,
+                                        P_QUANTITY              NUMBER,
+                                        P_UNIT_SELLING_PRICE    NUMBER,
+                                        P_EXCHANGE_RATE_TYPE    VARCHAR2,
+                                        P_EXCHANGE_RATE         NUMBER)
    IS
       --------------------------------------------
       --ORG Parameter
 
       L_OPERATING_UNIT        NUMBER;
       L_ORGANIZATION_ID       NUMBER;
+      L_ORGANIZATION_CODE     VARCHAR2 (3);
       L_SET_OF_BOOKS          NUMBER;
       L_LEGAL_ENTITY_ID       NUMBER;
 
@@ -244,7 +377,6 @@ IS
 
       L_ITEM_ID               NUMBER;
       L_UOM_CODE              VARCHAR2 (10);
-      L_ITEM_DESCRIPTION      VARCHAR2 (500);
 
       --------------------------------------------
 
@@ -252,6 +384,7 @@ IS
 
       --------------------------------------------
 
+      L_BATCH_SOURCE_NAME     VARCHAR2 (500);  --:= 'DBL CL Imported Invoice';
       L_CUST_TRX_TYPE_ID      NUMBER;
       L_CODE_COMBINATION_ID   NUMBER;
 
@@ -261,12 +394,15 @@ IS
 
       --------------------------------------------
 
-      l_batch_source_id       NUMBER;
+      L_CURRENCY_CODE         VARCHAR2 (3);
+      L_EXCHANGE_RATE_TYPE    VARCHAR2 (30 BYTE);
+      L_EXCHANGE_RATE         NUMBER;
+      L_EXCHANGE_DATE         DATE;
 
       --------------------------------------------
 
-      L_TRX_DATE              DATE := P_TRX_DATE;
-      L_GL_DATE               DATE := P_GL_DATE;
+      L_TRX_DATE              DATE := NVL (P_TRX_DATE, SYSDATE);
+      L_GL_DATE               DATE := NVL (P_GL_DATE, SYSDATE);
 
       --------------------------------------------
 
@@ -280,10 +416,12 @@ IS
 
       BEGIN
          SELECT OOD.OPERATING_UNIT,
+                OOD.ORGANIZATION_CODE,
                 OOD.ORGANIZATION_ID,
                 OU.SET_OF_BOOKS_ID,
                 OU.DEFAULT_LEGAL_CONTEXT_ID
            INTO L_OPERATING_UNIT,
+                L_ORGANIZATION_CODE,
                 L_ORGANIZATION_ID,
                 L_SET_OF_BOOKS,
                 L_LEGAL_ENTITY_ID
@@ -322,6 +460,25 @@ IS
             l_error_code := 'E';
       END;
       */
+
+      --------------------------------------------------
+      ----------Validate Chart Of Accounts Id------------
+      --------------------------------------------------
+      BEGIN
+         SELECT currency_code
+           INTO l_currency_code
+           FROM gl_currencies
+          WHERE     enabled_flag = 'Y'
+                AND currency_code = NVL (p_currency_code, 'BDT');
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            l_error_message :=
+                  l_error_message
+               || ','
+               || 'Please enter correct Currency Code.';
+            l_error_code := 'E';
+      END;
 
 
 
@@ -388,7 +545,7 @@ IS
                 HZ_CUST_ACCOUNTS HCA,
                 HZ_CUST_ACCT_SITES_ALL HCAS,
                 HZ_CUST_SITE_USES_ALL HCSU,
-                RA_TERRITORIES TER
+                ra_territories ter
           WHERE     HP.PARTY_ID = HPS.PARTY_ID
                 AND HCA.PARTY_ID = HP.PARTY_ID
                 AND HCA.CUST_ACCOUNT_ID = HCAS.CUST_ACCOUNT_ID
@@ -418,14 +575,11 @@ IS
       ----------------------------------------
 
 
-
       IF P_ITEM_CODE IS NOT NULL                --OR P_SALES_ORDER IS NOT NULL
       THEN
          BEGIN
-            SELECT MSI.INVENTORY_ITEM_ID,
-                   MSI.PRIMARY_UOM_CODE,
-                   MSI.DESCRIPTION
-              INTO L_ITEM_ID, L_UOM_CODE, L_ITEM_DESCRIPTION
+            SELECT MSI.INVENTORY_ITEM_ID, MSI.PRIMARY_UOM_CODE
+              INTO L_ITEM_ID, L_UOM_CODE
               FROM APPS.MTL_SYSTEM_ITEMS_B MSI
              WHERE     SEGMENT1 = P_ITEM_CODE
                    AND ORGANIZATION_ID = L_ORGANIZATION_ID
@@ -438,8 +592,8 @@ IS
                l_error_code := 'E';
          END;
       ELSE
-         SELECT NULL, NULL, NULL
-           INTO L_ITEM_ID, L_UOM_CODE, L_ITEM_DESCRIPTION
+         SELECT NULL, NULL
+           INTO L_ITEM_ID, L_UOM_CODE
            FROM DUAL;
       END IF;
 
@@ -466,11 +620,33 @@ IS
 
 
       ----------------------------------------
+      ----------VALIDATE Btach Source-----
+      ----------------------------------------
+
+      BEGIN
+         SELECT NAME
+           INTO L_BATCH_SOURCE_NAME
+           FROM RA_BATCH_SOURCES_ALL
+          WHERE     NAME = P_BATCH_SOURCE_NAME
+                AND ORG_ID = L_OPERATING_UNIT
+                AND STATUS = 'A';
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            l_error_message :=
+                  l_error_message
+               || ','
+               || 'Please enter correct Cust_Trx_Type Name info.';
+            l_error_code := 'E';
+      END;
+
+
+      ----------------------------------------
       ----------VALIDATE Cust_TRX_Type_ID-----
       ----------------------------------------
 
       BEGIN
-         SELECT CTT.CUST_TRX_TYPE_ID, CTT.GL_ID_REV
+         SELECT CUST_TRX_TYPE_ID, CTT.GL_ID_REV
            INTO L_CUST_TRX_TYPE_ID, L_CODE_COMBINATION_ID
            FROM RA_CUST_TRX_TYPES_ALL CTT
           WHERE CTT.NAME = P_CUST_TRX_TYPE;
@@ -485,26 +661,32 @@ IS
       END;
 
 
-      ----------------------------------------
-      ----------VALIDATE Batch Source-----
-      ----------------------------------------
 
-      BEGIN
-         SELECT batch_source_id
-           INTO l_batch_source_id
-           FROM ra_batch_sources_all
-          WHERE     UPPER (NAME) = UPPER (P_BATCH_SOURCE_NAME)
-                AND ORG_ID = L_OPERATING_UNIT
-                AND STATUS = 'A';
-      EXCEPTION
-         WHEN NO_DATA_FOUND
-         THEN
-            l_error_message :=
-                  l_error_message
-               || ','
-               || 'Please enter correct Batch Source Name info.';
-            l_error_code := 'E';
-      END;
+      ------------------------------------------
+      ----------VALIDATE Exchange Rate Type-----
+      ------------------------------------------
+
+      IF l_currency_code = 'BDT' AND P_EXCHANGE_RATE_TYPE = 'User'
+      THEN
+         SELECT P_EXCHANGE_RATE_TYPE, NULL, 1
+           INTO L_EXCHANGE_RATE_TYPE, L_EXCHANGE_DATE, L_EXCHANGE_RATE
+           FROM DUAL;
+      ELSIF l_currency_code != 'BDT' AND P_EXCHANGE_RATE_TYPE = 'User'
+      THEN
+         SELECT P_EXCHANGE_RATE_TYPE, L_TRX_DATE, P_EXCHANGE_RATE
+           INTO L_EXCHANGE_RATE_TYPE, L_EXCHANGE_DATE, L_EXCHANGE_RATE
+           FROM DUAL;
+      ELSIF l_currency_code != 'BDT' AND P_EXCHANGE_RATE_TYPE != 'User'
+      THEN
+         SELECT CONVERSION_TYPE, CONVERSION_DATE, CONVERSION_RATE
+           INTO L_EXCHANGE_RATE_TYPE, L_EXCHANGE_DATE, L_EXCHANGE_RATE
+           FROM gl_daily_rates
+          WHERE     1 = 1
+                AND FROM_CURRENCY = P_CURRENCY_CODE
+                AND TRUNC (CONVERSION_DATE) = TRUNC (L_TRX_DATE)
+                AND CONVERSION_TYPE = P_EXCHANGE_RATE_TYPE
+                AND TO_CURRENCY = 'BDT';
+      END IF;
 
 
       --------------------------------------------------------------------------------------------------------------
@@ -519,57 +701,56 @@ IS
          raise_application_error (-20101, l_error_message);
       ELSIF NVL (l_error_code, 'A') <> 'E'
       THEN
-         INSERT INTO apps.xxdbl_cer_ar_inv_upld_stg (SL_NO,
-                                                     CREATION_DATE,
-                                                     CREATED_BY,
-                                                     TRX_TYPE,
-                                                     CUST_TRX_TYPE_ID,
-                                                     ORGANIZATION_CODE,
-                                                     BATCH_SOURCE_NAME,
-                                                     BATCH_SOURCE_ID,
-                                                     LINE_NUMBER,
-                                                     TRX_DATE,
-                                                     GL_DATE,
-                                                     CURRENCY_CODE,
-                                                     CUSTOMER_NUMBER,
-                                                     ITEM_CODE,
-                                                     QUANTITY,
-                                                     UNIT_SELLING_PRICE,
-                                                     OPERATING_UNIT,
-                                                     ORGANIZATION_ID,
-                                                     SET_OF_BOOKS,
-                                                     LEGAL_ENTITY_ID,
-                                                     ITEM_ID,
-                                                     UOM_CODE,
-                                                     AMOUNT,
-                                                     CUSTOMER_ID,
-                                                     BILL_TO_SITE_ID,
-                                                     SHIP_TO_SITE_ID,
-                                                     TERM_ID,
-                                                     TERRITORY_ID,
-                                                     T_SEGMENT1,
-                                                     T_SEGMENT2,
-                                                     T_SEGMENT3,
-                                                     T_SEGMENT4,
-                                                     LINE_DESCRIPTION,
-                                                     ITEM_DESCRIPTION,
-                                                     GL_ID_REV)
+         INSERT INTO apps.xxdbl_cer_ra_interface_stg (SL_NO,
+                                                      CREATION_DATE,
+                                                      CREATED_BY,
+                                                      TRX_TYPE,
+                                                      CUST_TRX_TYPE_ID,
+                                                      ORGANIZATION_CODE,
+                                                      BATCH_SOURCE_NAME,
+                                                      LINE_NUMBER,
+                                                      TRX_DATE,
+                                                      GL_DATE,
+                                                      CURRENCY_CODE,
+                                                      CUSTOMER_NUMBER,
+                                                      ITEM_CODE,
+                                                      QUANTITY,
+                                                      UNIT_SELLING_PRICE,
+                                                      OPERATING_UNIT,
+                                                      ORGANIZATION_ID,
+                                                      SET_OF_BOOKS,
+                                                      LEGAL_ENTITY_ID,
+                                                      ITEM_ID,
+                                                      UOM_CODE,
+                                                      AMOUNT,
+                                                      CUSTOMER_ID,
+                                                      BILL_TO_SITE_ID,
+                                                      SHIP_TO_SITE_ID,
+                                                      TERM_ID,
+                                                      TERRITORY_ID,
+                                                      T_SEGMENT1,
+                                                      T_SEGMENT2,
+                                                      T_SEGMENT3,
+                                                      T_SEGMENT4,
+                                                      EXCHANGE_RATE_TYPE,
+                                                      EXCHANGE_DATE,
+                                                      EXCHANGE_RATE,
+                                                      CODE_COMBINATION_ID)
               VALUES (TRIM (P_SL_NO),
                       SYSDATE,
                       P_USER_ID,
                       TRIM (P_TRX_TYPE),
                       TRIM (L_CUST_TRX_TYPE_ID),
-                      TRIM (P_ORGANIZATION_CODE),
-                      TRIM (P_BATCH_SOURCE_NAME),
-                      TRIM (l_batch_source_id),
+                      TRIM (L_ORGANIZATION_CODE),
+                      TRIM (L_BATCH_SOURCE_NAME),
                       TRIM (P_LINE_NUMBER),
                       TRIM (L_TRX_DATE),
                       TRIM (L_GL_DATE),
-                      TRIM (P_CURRENCY_CODE),
+                      TRIM (L_CURRENCY_CODE),
                       TRIM (P_CUSTOMER_NUMBER),
                       TRIM (P_ITEM_CODE),
-                      TRIM (P_QUANTITY),
-                      TRIM (P_UNIT_SELLING_PRICE),
+                      TRIM (NVL (P_QUANTITY, 1)),
+                      TRIM (NVL (P_UNIT_SELLING_PRICE, 1)),
                       TRIM (L_OPERATING_UNIT),
                       TRIM (L_ORGANIZATION_ID),
                       TRIM (L_SET_OF_BOOKS),
@@ -586,12 +767,13 @@ IS
                       TRIM (L_T_SEGMENT2),
                       TRIM (L_T_SEGMENT3),
                       TRIM (L_T_SEGMENT4),
-                      TRIM (P_LINE_DESCRIPTION),
-                      TRIM (L_ITEM_DESCRIPTION),
+                      TRIM (L_EXCHANGE_RATE_TYPE),
+                      TRIM (L_EXCHANGE_DATE),
+                      TRIM (L_EXCHANGE_RATE),
                       TRIM (L_CODE_COMBINATION_ID));
       END IF;
 
       COMMIT;
-   END ar_cust_trx_stg_upload;
-END xxdbl_cer_ar_inv_upld_pkg;
+   END upload_data_to_ar_int_stg;
+END xxdbl_cer_ar_intf_upld_pkg;
 /

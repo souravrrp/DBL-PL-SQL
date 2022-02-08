@@ -1,43 +1,43 @@
-/* Formatted on 6/25/2020 5:22:40 PM (QP5 v5.287) */
-SELECT
-    STG.*
-    FROM xxdbl.xxdbl_cer_ar_inv_upld_stg STG
-   WHERE 1 = 1
-   AND operating_unit=126
-   --AND FLAG IS NULL
-   --order by creation_date desc
-   ;
-   
-   update
-   xxdbl_cer_ar_inv_upld_stg STG
-   SET FLAG=null
-   WHERE 1=1
-   AND SL_NO=1
-   --AND FLAG IS NULL
-   ;
+/* Formatted on 6/14/2021 2:15:40 PM (QP5 v5.287) */
+  SELECT *
+    FROM xxdbl.xxdbl_cer_ra_interface_stg
+--where flag is null
+ORDER BY SL_NO DESC;
+
+--truncate table xxdbl.xxdbl_cer_ra_interface_stg;
 
 
-SELECT *
---MAX(CUSTOMER_TRX_ID)
-FROM
-APPS.RA_CUSTOMER_TRX_ALL
-order by 
-creation_date 
---,
---LAST_UPDATE_DATE
-desc
-;
+  SELECT ra.creation_date, ra.*
+    FROM RA_INTERFACE_LINES_ALL ra
+   WHERE 1 = 1 AND ORG_ID = 126 
+   --AND TRUNC (CREATION_DATE) BETWEEN TO_DATE ('14-JUN-2021') AND TO_DATE ('14-JUN-2021')
+   --AND CUSTOMER_TRX_ID=959769
+   --AND SALES_ORDER_SOURCE='ORDER ENTRY'
+   --AND LINE_TYPE='LINE'
+         AND BATCH_SOURCE_NAME = 'DBL CL Imported Invoice'
+ORDER BY ra.creation_date DESC;
 
-SELECT
-*
-FROM
-RA_CUSTOMER_TRX_LINES_ALL
-order by 
-creation_date 
---,
---LAST_UPDATE_DATE
-desc;
+  SELECT rda.creation_date, rda.*
+    FROM ra_interface_distributions_all rda
+   WHERE 1 = 1 AND ORG_ID = 126
+--AND TRUNC (CREATION_DATE) BETWEEN TO_DATE ('01-APR-2021') AND TO_DATE ('04-APR-2021')
+ORDER BY rda.creation_date DESC;
 
+--   delete RA_INTERFACE_LINES_ALL ra where interface_line_id in (1951117);--,
+----1941081);
+--
+--update
+--RA_INTERFACE_LINES_ALL ra set line_number=2 where interface_line_id in (1941118);--,
+----1941081);
+
+  SELECT *
+    FROM RA_CUSTOMER_TRX_ALL
+   WHERE     1 = 1
+         --AND TRUNC (CREATION_DATE) BETWEEN TO_DATE ('01-APR-2021') AND TO_DATE ('04-APR-2021')
+         --AND trx_number = '419047423'--'421116207'
+         AND ORG_ID = 126
+--AND INVOICE_CURRENCY_CODE='BDT'
+ORDER BY CREATION_DATE DESC;
 
 SELECT OOD.OPERATING_UNIT,
        OOD.ORGANIZATION_ID,
@@ -74,7 +74,8 @@ SELECT HCAS.CUST_ACCT_SITE_ID,
        TER.SEGMENT1,
        TER.SEGMENT2,
        TER.SEGMENT3,
-       TER.SEGMENT4
+       TER.SEGMENT4,
+       HCSU.PRIMARY_SALESREP_ID
   --              INTO L_SHIP_TO_SITE_ID,
   --                   L_TERRITORY_ID,
   --                   L_T_SEGMENT1,
@@ -135,20 +136,27 @@ SELECT (  NVL ( :P_QUANTITY, :L_ORDERED_QUANTITY)
         * NVL ( :P_UNIT_SELLING_PRICE, :L_UNIT_SELLING_PRICE))
   --INTO L_AMOUNT
   FROM DUAL;
-  
-SELECT (  :P_QUANTITY
-        * :P_UNIT_SELLING_PRICE)
+
+SELECT ( :P_QUANTITY * :P_UNIT_SELLING_PRICE)
   --INTO L_AMOUNT
   FROM DUAL;
 
 
-SELECT CTT.NAME,CUST_TRX_TYPE_ID
+
+SELECT CTT.NAME, CUST_TRX_TYPE_ID
   --INTO L_CUST_TRX_TYPE_ID
   FROM RA_CUST_TRX_TYPES_ALL CTT
- WHERE      (:P_CUST_TRX_TYPE IS NULL OR (UPPER(NAME) LIKE UPPER('%'||:P_CUST_TRX_TYPE||'%') ))
- --AND CUST_TRX_TYPE_ID=1009
- --and CTT.NAME = :P_CUST_TRX_TYPE
- ;
+ WHERE     (   :P_CUST_TRX_TYPE IS NULL
+            OR (UPPER (NAME) LIKE UPPER ('%' || :P_CUST_TRX_TYPE || '%')))
+       AND CUST_TRX_TYPE_ID = 17162
+--and CTT.NAME = :P_CUST_TRX_TYPE
+;
+SELECT NAME, batch_source_id, org_id
+  --INTO v_batch_source_id
+  FROM ra_batch_sources_all
+ WHERE     1 = 1
+       AND UPPER (NAME) LIKE UPPER ('%' || :P_BATCH_SOURCE || '%')
+       AND org_id = :p_org_id;
 
 SELECT MSI.INVENTORY_ITEM_ID, MSI.PRIMARY_UOM_CODE
   --INTO L_INVENTORY_ITEM_ID, L_UOM_CODE
@@ -156,48 +164,16 @@ SELECT MSI.INVENTORY_ITEM_ID, MSI.PRIMARY_UOM_CODE
  WHERE     SEGMENT1 = :P_ITEM_CODE
        AND ORGANIZATION_ID = :L_ORGANIZATION_ID
        AND ENABLED_FLAG = 'Y';
-       
-       
-       SELECT batch_source_id,org_id
-           --INTO v_batch_source_id
-           FROM ra_batch_sources_all
-          WHERE     UPPER (NAME) = UPPER ('DBLCL - Manual')
-                AND org_id = :p_org_id;
 
-SELECT DISTINCT SL_NO,
-                BATCH_SOURCE_ID,
-                CUST_TRX_TYPE_ID,
-                CUSTOMER_ID,
-                CURRENCY_CODE,
-                TRX_DATE,
-                GL_DATE
-  FROM apps.xxdbl_cer_ar_inv_upld_stg
- WHERE FLAG IS NULL AND OPERATING_UNIT = 126;
 
-    
-   
-   update
-   xxdbl_cer_ar_inv_upld_stg STG
-   SET FLAG='Y',SL_NO=2
-   WHERE 1=1
-   AND operating_unit=126
-   AND SL_NO=1
-   AND BATCH_SOURCE_ID=4037
-   --AND FLAG IS NULL
-   ;
-   
-   
-   DELETE FROM xxdbl_cer_ar_inv_upld_stg WHERE FLAG IS NULL;
-   
 
-EXECUTE apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx;--('','');
+   --DELETE FROM ra_interface_table_stg;
 
-EXECUTE APPS.xxdbl_cer_ar_inv_upld_pkg.ar_cust_trx_stg_upload (1,'251','DBLCL - Sales','Invoice','Tiles Local INV',1,'25-SEP-19','25-SEP-19','BDT','2597','NP6060-012GN',10,9,'Testing Phase');
+SELECT *
+  FROM xxdbl_ra_interface_upload_stg
+ WHERE 1 = 1 AND FLAG IS NULL;
 
-EXECUTE APPS.ar_cust_trx_upld_adi_pkg.ar_cust_trx_stg_upload (1,'101','MSML - Manual','Invoice','Yarn Sales INV',1,'31-MAY-2020','31-MAY-2020','BDT','2013','YRN30S100CTN521G0415',3,2,'Testing Phase');
 
-show errors procedure apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx ;
+EXECUTE apps.xxdbl_ar_interface_upload_pkg.import_data_to_ar_interface(' ',' ');
 
-execute apps.xxdbl_cer_ar_inv_upld_pkg.import_data_to_ar_invoice;
-
-select apps.ar_cust_trx_upld_adi_pkg.check_error_log_to_import_data from dual;
+EXECUTE APPS.xxdbl_cer_ar_intf_upld_pkg.upload_data_to_ar_int_stg ('21','251','DBL CL Imported Invoice','Invoice','For Dealer','1','05-JUN-2021','05-JUN-2021','BDT','2620','W2540-022BRL','1','3000','User','1');

@@ -1,4 +1,44 @@
 /* Formatted on 6/25/2020 5:22:40 PM (QP5 v5.287) */
+SELECT
+    STG.*
+    FROM xxdbl.xxdbl_cer_ar_inv_upld_stg STG
+   WHERE 1 = 1
+   AND operating_unit=126
+   --AND FLAG IS NULL
+   --order by creation_date desc
+   ;
+   
+   update
+   xxdbl_cer_ar_inv_upld_stg STG
+   SET FLAG=null
+   WHERE 1=1
+   AND SL_NO=1
+   --AND FLAG IS NULL
+   ;
+
+
+SELECT *
+--MAX(CUSTOMER_TRX_ID)
+FROM
+APPS.RA_CUSTOMER_TRX_ALL
+order by 
+creation_date 
+--,
+--LAST_UPDATE_DATE
+desc
+;
+
+SELECT
+*
+FROM
+RA_CUSTOMER_TRX_LINES_ALL
+order by 
+creation_date 
+--,
+--LAST_UPDATE_DATE
+desc;
+
+
 SELECT OOD.OPERATING_UNIT,
        OOD.ORGANIZATION_ID,
        OU.SET_OF_BOOKS_ID,
@@ -102,10 +142,13 @@ SELECT (  :P_QUANTITY
   FROM DUAL;
 
 
-SELECT CUST_TRX_TYPE_ID
+SELECT CTT.NAME,CUST_TRX_TYPE_ID
   --INTO L_CUST_TRX_TYPE_ID
   FROM RA_CUST_TRX_TYPES_ALL CTT
- WHERE CTT.NAME = :P_CUST_TRX_TYPE;
+ WHERE      (:P_CUST_TRX_TYPE IS NULL OR (UPPER(NAME) LIKE UPPER('%'||:P_CUST_TRX_TYPE||'%') ))
+ --AND CUST_TRX_TYPE_ID=1009
+ --and CTT.NAME = :P_CUST_TRX_TYPE
+ ;
 
 SELECT MSI.INVENTORY_ITEM_ID, MSI.PRIMARY_UOM_CODE
   --INTO L_INVENTORY_ITEM_ID, L_UOM_CODE
@@ -118,7 +161,7 @@ SELECT MSI.INVENTORY_ITEM_ID, MSI.PRIMARY_UOM_CODE
        SELECT batch_source_id,org_id
            --INTO v_batch_source_id
            FROM ra_batch_sources_all
-          WHERE     UPPER (NAME) = UPPER ('DBL Export Sales')
+          WHERE     UPPER (NAME) = UPPER ('DBLCL - Manual')
                 AND org_id = :p_org_id;
 
 SELECT DISTINCT SL_NO,
@@ -128,38 +171,33 @@ SELECT DISTINCT SL_NO,
                 CURRENCY_CODE,
                 TRX_DATE,
                 GL_DATE
-  FROM apps.xxdbl_ra_customer_trx_stg
- WHERE FLAG IS NULL AND OPERATING_UNIT = 131
+  FROM apps.xxdbl_cer_ar_inv_upld_stg
+ WHERE FLAG IS NULL AND OPERATING_UNIT = 126;
 
-    SELECT
-    STG.*
-    FROM xxdbl_ra_customer_trx_stg STG
-   WHERE 1 = 1
-   AND operating_unit=131
-   --AND FLAG IS NULL
-   --order by creation_date desc
-   ;
+    
    
    update
-   xxdbl_ra_customer_trx_stg STG
-   SET FLAG=NULL
+   xxdbl_cer_ar_inv_upld_stg STG
+   SET FLAG='Y',SL_NO=2
    WHERE 1=1
-   AND operating_unit=131
+   AND operating_unit=126
+   AND SL_NO=1
+   AND BATCH_SOURCE_ID=4037
    --AND FLAG IS NULL
    ;
    
    
-   DELETE FROM xxdbl_ra_customer_trx_stg WHERE FLAG IS NULL;
+   DELETE FROM xxdbl_cer_ar_inv_upld_stg WHERE FLAG IS NULL;
    
 
 EXECUTE apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx;--('','');
 
-EXECUTE APPS.ar_cust_trx_upld_adi_pkg.ar_cust_trx_stg_upload (1,'251','DBLCL - Sales','Invoice','Tiles Local INV',1,'25-SEP-19','25-SEP-19','BDT','2597','NP6060-012GN',10,9,'Testing Phase');
+EXECUTE APPS.xxdbl_cer_ar_inv_upld_pkg.ar_cust_trx_stg_upload (1,'251','DBLCL - Sales','Invoice','Tiles Local INV',1,'25-SEP-19','25-SEP-19','BDT','2597','NP6060-012GN',10,9,'Testing Phase');
 
 EXECUTE APPS.ar_cust_trx_upld_adi_pkg.ar_cust_trx_stg_upload (1,'101','MSML - Manual','Invoice','Yarn Sales INV',1,'31-MAY-2020','31-MAY-2020','BDT','2013','YRN30S100CTN521G0415',3,2,'Testing Phase');
 
 show errors procedure apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx ;
 
-execute apps.ar_cust_trx_upld_adi_pkg.check_error_log_to_import_data;
+execute apps.xxdbl_cer_ar_inv_upld_pkg.import_data_to_ar_invoice;
 
 select apps.ar_cust_trx_upld_adi_pkg.check_error_log_to_import_data from dual;
