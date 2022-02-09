@@ -1,12 +1,42 @@
 /* Formatted on 6/25/2020 5:22:40 PM (QP5 v5.287) */
-SELECT
-    STG.*
-    FROM xxdbl.xxdbl_cer_ar_inv_upld_stg STG
-   WHERE 1 = 1
-   AND operating_unit=126
+SELECT *
+              FROM xxdbl.xxdbl_cer_ar_intrf_stg
+             WHERE FLAG IS NULL;
+   --AND operating_unit=126
    --AND FLAG IS NULL
    --order by creation_date desc
    ;
+
+--> Interface Tables:
+
+SELECT rila.CREATION_DATE,rila.*
+  FROM RA_INTERFACE_LINES_ALL rila
+ WHERE rila.CREATION_DATE is not null
+ --and TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
+ order by rila.CREATION_DATE desc
+ ;
+
+--DELETE RA_INTERFACE_LINES_ALL where TRUNC(CREATION_DATE) = TRUNC(SYSDATE);
+--COMMIT;
+
+SELECT *
+  FROM RA_INTERFACE_DISTRIBUTIONS_ALL
+ WHERE TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
+ 
+ 
+ SELECT
+ *
+ FROM
+ RA_INTERFACE_SALESCREDITS_ALL;
+
+--DELETE RA_INTERFACE_DISTRIBUTIONS_ALL where TRUNC(CREATION_DATE) = TRUNC(SYSDATE);
+--COMMIT;
+--> Error Table:
+
+  SELECT *
+    FROM RA_INTERFACE_ERRORS_ALL
+ORDER BY INTERFACE_LINE_ID DESC;
+
    
    update
    xxdbl_cer_ar_inv_upld_stg STG
@@ -16,6 +46,8 @@ SELECT
    --AND FLAG IS NULL
    ;
 
+delete xxdbl.xxdbl_cer_ar_intrf_stg
+             WHERE FLAG IS NULL;
 
 SELECT *
 --MAX(CUSTOMER_TRX_ID)
@@ -192,7 +224,6 @@ SELECT DISTINCT SL_NO,
 
 EXECUTE apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx;--('','');
 
-EXECUTE APPS.xxdbl_cer_ar_inv_upld_pkg.ar_cust_trx_stg_upload (1,'251','DBLCL - Sales','Invoice','Tiles Local INV',1,'25-SEP-19','25-SEP-19','BDT','2597','NP6060-012GN',10,9,'Testing Phase');
 
 EXECUTE APPS.ar_cust_trx_upld_adi_pkg.ar_cust_trx_stg_upload (1,'101','MSML - Manual','Invoice','Yarn Sales INV',1,'31-MAY-2020','31-MAY-2020','BDT','2013','YRN30S100CTN521G0415',3,2,'Testing Phase');
 
@@ -201,3 +232,5 @@ show errors procedure apps.ar_cust_trx_upld_adi_pkg.import_data_to_ar_cust_trx ;
 execute apps.xxdbl_cer_ar_inv_upld_pkg.import_data_to_ar_invoice;
 
 select apps.ar_cust_trx_upld_adi_pkg.check_error_log_to_import_data from dual;
+
+EXECUTE APPS.xxdbl_cer_ar_intrf_pkg.upload_data_to_ar_int_stg (1,'DBLCL - Manual','Credit Memo','Tiles Sale -Dealer',1,'01-JAN-2022','01-JAN-2022','BDT','2597',10,9,'Testing Phase','201.101.999.22106.323123.105.999.301.999');
