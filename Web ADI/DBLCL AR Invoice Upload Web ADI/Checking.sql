@@ -1,11 +1,39 @@
 /* Formatted on 6/14/2021 2:15:40 PM (QP5 v5.287) */
   SELECT *
-    FROM xxdbl.xxdbl_cer_ra_interface_stg
+    FROM xxdbl.xxdbl_cer_ar_intrf_stg
 --where flag is null
 ORDER BY SL_NO DESC;
 
 --truncate table xxdbl.xxdbl_cer_ra_interface_stg;
 
+
+--> Interface Tables:
+
+SELECT *
+  FROM RA_INTERFACE_LINES_ALL
+ WHERE TRUNC (CREATION_DATE) = TRUNC (SYSDATE)
+ ;
+
+--DELETE RA_INTERFACE_LINES_ALL where TRUNC(CREATION_DATE) = TRUNC(SYSDATE);
+--COMMIT;
+
+SELECT *
+  FROM RA_INTERFACE_DISTRIBUTIONS_ALL
+ WHERE TRUNC (CREATION_DATE) = TRUNC (SYSDATE);
+ 
+ 
+ SELECT
+ *
+ FROM
+ RA_INTERFACE_SALESCREDITS_ALL
+
+--DELETE RA_INTERFACE_DISTRIBUTIONS_ALL where TRUNC(CREATION_DATE) = TRUNC(SYSDATE);
+--COMMIT;
+--> Error Table:
+
+  SELECT *
+    FROM RA_INTERFACE_ERRORS_ALL
+ORDER BY INTERFACE_LINE_ID DESC;
 
   SELECT ra.creation_date, ra.*
     FROM RA_INTERFACE_LINES_ALL ra
@@ -14,7 +42,7 @@ ORDER BY SL_NO DESC;
    --AND CUSTOMER_TRX_ID=959769
    --AND SALES_ORDER_SOURCE='ORDER ENTRY'
    --AND LINE_TYPE='LINE'
-         AND BATCH_SOURCE_NAME = 'DBL CL Imported Invoice'
+         --AND BATCH_SOURCE_NAME = 'DBL CL Imported Invoice'
 ORDER BY ra.creation_date DESC;
 
   SELECT rda.creation_date, rda.*
@@ -151,6 +179,7 @@ SELECT CTT.NAME, CUST_TRX_TYPE_ID
        AND CUST_TRX_TYPE_ID = 17162
 --and CTT.NAME = :P_CUST_TRX_TYPE
 ;
+
 SELECT NAME, batch_source_id, org_id
   --INTO v_batch_source_id
   FROM ra_batch_sources_all
@@ -176,4 +205,4 @@ SELECT *
 
 EXECUTE apps.xxdbl_ar_interface_upload_pkg.import_data_to_ar_interface(' ',' ');
 
-EXECUTE APPS.xxdbl_cer_ar_intf_upld_pkg.upload_data_to_ar_int_stg ('21','251','DBL CL Imported Invoice','Invoice','For Dealer','1','05-JUN-2021','05-JUN-2021','BDT','2620','W2540-022BRL','1','3000','User','1');
+EXECUTE APPS.xxdbl_cer_ar_intf_upld_pkg.upload_data_to_ar_int_stg ('6','DBL CL Imported Invoice','Invoice','For Dealer','1','05-JUN-2021','05-JUN-2021','BDT','2620','W2540-022BRL','1','3000','User','1');

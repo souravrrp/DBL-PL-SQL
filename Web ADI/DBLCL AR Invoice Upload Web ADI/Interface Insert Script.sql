@@ -1,4 +1,4 @@
-/* Formatted on 2/8/2022 5:13:43 PM (QP5 v5.374) */
+/* Formatted on 2/9/2022 10:16:39 AM (QP5 v5.374) */
 DECLARE
     L_RETURN_STATUS       VARCHAR2 (1);
     p_responsibility_id   NUMBER := apps.fnd_global.resp_id;
@@ -181,6 +181,8 @@ BEGIN
                  WHERE     FLAG IS NULL
                        AND SL_NO = ln_cur_stg.SL_NO
                        AND LINE_NUMBER = ln_cur_stg.LINE_NUMBER;
+
+                COMMIT;
             END IF;
         EXCEPTION
             WHEN OTHERS
