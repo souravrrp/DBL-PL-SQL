@@ -98,7 +98,7 @@ SELECT alloc_code, concatenated_segments
    WHERE     a.inventory_item_id = b.inventory_item_id
          AND a.organization_id = b.organization_id
          AND a.alloc_id = c.alloc_id
-         --AND ALLOC_CODE LIKE 'ST-DEPRECIATION%'
+         --AND alloc_code LIKE 'ST-DEPRECIATION%'
          --AND alloc_code like 'ST%'
          AND (   ( :p_organization_id IS NULL AND a.organization_id IN (150))
               OR (a.organization_id = :p_organization_id))

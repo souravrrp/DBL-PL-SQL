@@ -1,4 +1,4 @@
-/* Formatted on 2/15/2022 5:01:01 PM (QP5 v5.374) */
+/* Formatted on 2/15/2022 6:01:31 PM (QP5 v5.374) */
 SELECT ledger_name,
        legal_entity_name,
        org_id,
@@ -10,32 +10,9 @@ SELECT ledger_name,
        item_code,
        item_name,
        uom,
-       (CASE
-            WHEN NVL (pr_quantity, 0) <
-                 (NVL (po_quantity, 0) + NVL (grn_quantity, 0))
-            THEN
-                0
-            WHEN NVL (pr_quantity, 0) >
-                 (NVL (po_quantity, 0) + NVL (grn_quantity, 0))
-            THEN
-                  NVL (pr_quantity, 0)
-                - (NVL (po_quantity, 0) + NVL (grn_quantity, 0))
-            ELSE
-                NVL (pr_quantity, 0)
-        END)                        pr_quantity,
-       (CASE
-            WHEN NVL (po_quantity, 0) > NVL (grn_quantity, 0)
-            THEN
-                NVL (po_quantity, 0) - NVL (grn_quantity, 0)
-            ELSE
-                NVL (po_quantity, 0)
-        END)                        po_quantity,
-       NVL (
-           (  (NVL (grn_quantity, 0) - NVL (quarantine_qty, 0))
-            - ((  NVL (onhand_quantity, 0)
-                - (NVL (quarantine_qty, 0) + NVL (reserve_quantity, 0))
-                + NVL (reserve_quantity, 0)))),
-           0)                       grn_quantity,
+       NVL (pr_quantity, 0)         pr_quantity,
+       NVL (po_quantity, 0)         po_quantity,
+       NVL (grn_quantity, 0)        grn_quantity,
        NVL (quarantine_qty, 0)      quarantine_qty,
        NVL (
            (  NVL (onhand_quantity, 0)
@@ -74,19 +51,7 @@ SELECT ledger_name,
                          --AND pla.item_id IS NOT NULL
                          AND prla.parent_req_line_id IS NULL)
                      pr_quantity,
-                 (SELECT (CASE
-                              WHEN SUM (pll.quantity_received) = 0
-                              THEN
-                                  SUM (pla.quantity)
-                              WHEN SUM (pll.quantity_received) >
-                                   SUM (pla.quantity)
-                              THEN
-                                  0
-                              ELSE
-                                  ABS (
-                                        SUM (pll.quantity)
-                                      - SUM (pll.quantity_received))
-                          END)
+                 (SELECT SUM (pla.quantity)
                     FROM po.po_headers_all       pha,
                          po.po_lines_all         pla,
                          po.po_line_locations_all pll,

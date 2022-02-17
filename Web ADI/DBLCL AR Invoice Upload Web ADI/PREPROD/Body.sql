@@ -1,4 +1,4 @@
-/* Formatted on 2/8/2022 4:30:36 PM (QP5 v5.374) */
+/* Formatted on 2/16/2022 5:10:12 PM (QP5 v5.374) */
 CREATE OR REPLACE PACKAGE BODY APPS.xxdbl_cer_ar_intrf_pkg
 IS
     FUNCTION check_error_log_to_import_data
@@ -92,7 +92,7 @@ IS
                              ln_cur_stg.UNIT_SELLING_PRICE, --> unit_selling_price,
                              ln_cur_stg.AMOUNT,                    --> amount,
                              ln_cur_stg.DESCRIPTION, --'Custom Interface Upload Invoice', --> description,
-                             'User', --> conversion_type,
+                             'User',                      --> conversion_type,
                              ln_cur_stg.EXCHANGE_RATE,    --> conversion_rate,
                              ln_cur_stg.EXCHANGE_DATE,    --> conversion_date,
                              --'DBL_IC_INVOICE',     --> interface_line_context,
